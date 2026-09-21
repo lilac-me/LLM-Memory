@@ -32,6 +32,8 @@
 .shard-path li{display:flex;flex-wrap:wrap;gap:8px;justify-content:space-between;padding:12px 0;border-top:1px solid var(--line)}
 .shard-path li span{overflow-wrap:anywhere}
 .shard-path li strong{font-variant-numeric:tabular-nums}
+
+.ratio-head{flex-wrap:wrap}
 </style></head>
 <body>
 <header><div class="brand"><span class="brand-mark">A</span><span>ATLAS <small>TRAINING MEMORY LAB</small></span></div><div class="header-right"><span class="badge">FSDP × EP</span><span>来源：10T Kimi 显存建模.xlsx</span><button id="reset" class="quiet">重置</button><button id="export">导出配置与结果 ↓</button></div></header>
@@ -84,12 +86,12 @@
 <div id="errors" hidden></div><div id="results">
 <section id="overview"><div class="section-head"><h2>单卡显存总览</h2><span id="status" class="badge"></span></div><div class="cards" id="cards"></div><div class="two-col"><article class="panel"><h3>按执行顺序看峰值 <small>GiB / rank</small></h3><div id="timeline"></div><div class="legend"><span><i style="background:var(--teal)"></i>前向</span><span><i style="background:var(--orange)"></i>反向</span><span><i style="background:var(--blue)"></i><span id="optimizer-legend">优化器</span></span></div><p class="small-note">横轴表示计算顺序，不是实际耗时。逐层保存 / 释放激活；以每个计算单位的保守工作集计算峰值。</p></article><article class="panel"><h3>峰值发生在哪里</h3><div id="peak-detail"></div></article></div><div id="warnings"></div></section>
 <section id="parameters"><div class="section-head"><h2>参数、梯度与优化器</h2><span class="muted">展开模块查看 EP 分配与 FSDP 分片过程</span></div><div id="sharding-paths" class="two-col"></div><p id="sharding-note" class="section-note"></p><div class="panel table-wrap"><table><thead><tr><th>模块</th><th>全局参数 / B</th><th>BF16 权重 / GiB</th><th>梯度 / GiB</th><th>展开</th></tr></thead><tbody id="param-body"></tbody><tfoot id="param-total"></tfoot></table></div><div class="formula-strip">非路由专家参数（含 shared experts / router / latent 投影）：fsdp_size = world_size<br>路由专家：ep_size × ep_fsdp_size = world_size<br>每 rank 权重字节 = 2 × 总参数量 / world_size<br>每 rank 梯度字节 = 梯度 shard 每元素字节数 × 总参数量 / world_size</div><article id="optimizer-total" class="panel"><h3 id="optimizer-total-title">优化器状态 · 全模型汇总</h3><div id="optimizer-totals"></div><div class="formula-strip"><span id="optimizer-state-formula"></span></div><p id="optimizer-total-note" class="small-note"></p></article></section>
-<section id="swap"><div class="section-head"><h2>Swap 策略与资源约束</h2><span class="muted">Offload 节省量与更新 / 恢复缓冲一起计算</span></div><div class="two-col"><article class="panel"><div class="row-between"><h3>优化器状态</h3><label class="switch"><input data-key="optSwap" type="checkbox"><span>Swap</span></label></div><p id="optimizer-description"></p><div class="field-grid"><label>单批 FP32 状态 / GiB<input data-key="optBatchGiB" type="number" min="0.01" step="0.25"></label><label>状态缓冲份数<select data-key="optBuffers" data-number><option value="1">1 · 串行</option><option value="2">2 · 双缓冲</option></select></label></div><div id="opt-summary"></div><p class="small-note">批大小是实现假设，需对齐真实 tensor / bucket 粒度。更新工作区另计每参数 4-byte grad + 2-byte cast 输出。双缓冲只计容量，不默认认为 IO 已重叠。Muon 正交化等额外临时工作区需计入“其他 HBM 预留”。</p></article><article class="panel"><div class="row-between"><h3>保存的激活</h3><label class="switch"><input data-key="actSwap" type="checkbox"><span>Swap</span></label></div><p>在下方按张量项选择卸载比例。当前计算单位仍需完整激活；恢复时计入预取。</p><label>D2H 队列：额外驻留的已完成计算单位<select data-key="d2hQueue" data-number><option value="0">0 · 每单位结束前排空</option><option value="1">1 · 容许滞留一个单位</option><option value="2">2 · 容许滞留两个单位</option></select></label><div id="act-summary"></div><p class="small-note">比例可表示实际可独立搬运的张量块 / tokens，不代表只搬运张量的一部分即可释放整块 storage。有限队列下，带宽不足会阻塞计算。</p></article></div><div class="panel"><div id="io-cards" class="io-grid"></div><div id="budget-bars"></div><p id="io-note" class="small-note"></p><details><summary>查看时间与 DDR 的计算口径</summary><div id="io-formulas"></div></details></div></section>
-<section id="activation"><div class="section-head"><h2>激活公式与细粒度卸载</h2><span id="act-total" class="badge"></span></div><div class="toolbar"><span>所有激活项</span><button data-allratio="0">0%</button><button data-allratio="50">50%</button><button data-allratio="100">100%</button><span class="muted">再展开模块单独调整；百分比按钮不自动开启 Swap</span><button id="suggest">按 HBM / DDR / IO 预算建议比例</button></div><p class="section-note">激活是每个 rank 的本地 micro batch，不除以 world size。保留表中保存张量的口径；Full attention scores（M13）与 latent up（M26）按原表汇总排除。非 2.8T 方案使用其模型维度，并统一套用 2.8T 公式。</p><div id="suggest-note" class="small-note" role="status"></div><p class="small-note">公式直接使用配置字段名，例如 seq_length × micro_batch_size × q_lora_rank；当前值可在左侧“模型结构与维度”中查看。</p><div id="act-details"></div></section>
+<section id="swap"><div class="section-head"><h2>Swap 策略与资源约束</h2><span class="muted">Offload 节省量与更新 / 恢复缓冲一起计算</span></div><div class="two-col"><article class="panel"><div class="row-between"><h3>优化器状态</h3><label class="switch"><input data-key="optSwap" type="checkbox"><span>Swap</span></label></div><p id="optimizer-description"></p><div class="field-grid"><label>单批 FP32 状态 / GiB<input data-key="optBatchGiB" type="number" min="0.01" step="0.25"></label><label>状态缓冲份数<select data-key="optBuffers" data-number><option value="1">1 · 串行</option><option value="2">2 · 双缓冲</option></select></label></div><div id="opt-summary"></div><p class="small-note">批大小是实现假设，需对齐真实 tensor / bucket 粒度。更新工作区另计每参数 4-byte grad + 2-byte cast 输出。双缓冲只计容量，不默认认为 IO 已重叠。Muon 正交化等额外临时工作区需计入“其他 HBM 预留”。</p></article><article class="panel"><div class="row-between"><h3>激活优化汇总</h3><a href="#activation">设置重计算 / offload</a></div><p>下方逐项设置重计算 / offload 比例。当前计算单位的激活、反向重建与恢复预取均计入峰值。</p><label>D2H 队列：额外驻留的已完成计算单位<select data-key="d2hQueue" data-number><option value="0">0 · 每单位结束前排空</option><option value="1">1 · 容许滞留一个单位</option><option value="2">2 · 容许滞留两个单位</option></select></label><div id="act-summary"></div><p class="small-note">比例可表示实际可独立搬运的张量块 / tokens，不代表只搬运张量的一部分即可释放整块 storage。有限队列下，带宽不足会阻塞计算。</p></article></div><div class="panel"><div id="io-cards" class="io-grid"></div><div id="budget-bars"></div><p id="io-note" class="small-note"></p><details><summary>查看时间与 DDR 的计算口径</summary><div id="io-formulas"></div></details></div></section>
+<section id="activation"><div class="section-head"><h2>激活公式与显存优化</h2><span id="act-total" class="badge"></span></div><div class="two-col"><article class="panel"><div class="row-between"><h3>Offload · 保存到 DDR</h3><label class="switch"><input data-key="actSwap" type="checkbox"><span>启用 Offload</span></label></div><p>前向结束后搬出选定的激活，反向需要时搬回；计入 DDR 容量、带宽和恢复缓冲。</p><p id="offload-summary" class="small-note"></p></article><article class="panel"><div class="row-between"><h3>重计算 · 反向重新生成</h3><label class="switch"><input data-key="actRecompute" type="checkbox"><span>启用重计算</span></label></div><p>前向结束后不保存选定的中间激活，反向时重新生成；这部分不占 offload DDR、不产生激活搬运。</p><p id="recompute-summary" class="small-note"></p><p class="small-note">容量近似：每个有重计算的计算单位额外保留一份 BF16 边界输入（seq_length × micro_batch_size × hidden_size × 2 bytes），不假设复用；当前单位的重建张量仍计入 HBM。比例需对应可重算的独立张量块；额外 FLOPs / 耗时、RNG 和路由状态暂未细化。</p></article></div><div class="toolbar"><span>所有激活项 · Offload</span><button data-allratio="0">0%</button><button data-allratio="50">50%</button><button data-allratio="100">100%</button><span class="muted">再展开模块单独调整；百分比按钮不自动开启开关</span><button id="suggest">按 HBM / DDR / IO 预算建议比例</button></div><div class="toolbar"><span>所有激活项 · 重计算</span><button data-allrecompute="0">0%</button><button data-allrecompute="50">50%</button><button data-allrecompute="100">100%</button><span class="muted">两种策略分配不同的激活份额，避免重复扣减</span></div><p class="section-note">激活是每个 rank 的本地 micro batch，不除以 world size。在表中保存张量基础上补充 FP32 moe_gating logits（seq_length × micro_batch_size × n_routed_experts × 4 bytes × num_moe_layers）；Full attention scores（M13）与 latent up（M26）按原表汇总排除。非 2.8T 方案使用其模型维度，并统一套用 2.8T 公式。</p><div id="suggest-note" class="small-note" role="status"></div><p class="small-note">公式直接使用配置字段名，例如 seq_length × micro_batch_size × q_lora_rank；当前值可在左侧“模型结构与维度”中查看。</p><div id="act-details"></div></section>
 <section id="mfu"><div class="section-head"><h2>FLOPs 与 MFU</h2><label class="inline">汇总口径<select data-key="flopMode"><option value="corrected">修正后的投影与 attention 口径</option><option value="original">原表漏项口径复算</option></select></label></div><div class="cards" id="mfu-cards"></div><div class="formula-strip">MFU = 训练 FLOPs / (实测 step 秒数 × world_size × 每卡峰值 FLOPS)<br>训练 FLOPs ≈ 前向 FLOPs × 训练倍数<br>global_batch_size = world_size × micro_batch_size × gradient_accumulation_steps</div><div id="flop-details"></div></section>
 <section id="assumptions"><div class="section-head"><h2>建模口径与表格校验</h2><span class="muted">可复查，而非 profiler 实测峰值</span></div><div class="panel prose">
-<h3>调度、分片与生命周期</h3><ul><li>共享专家、router、latent down/up 属于非路由专家参数，按 world_size 分片；仅 routed experts 按 EP 再 EP-FSDP 分片。无 tied embedding，所有专家均分配状态，top-K 只影响激活与计算。</li><li>默认每个 micro batch 顺序执行完整前向和反向；梯度累积不叠加多份完整激活。MLA / KDA 按层数均匀穿插，Dense 放在前面。实际排布与 FSDP wrapping 会改变预取峰值。</li><li>反向不把“前一层 grad”当作从 CPU 搬回的梯度：它是额外完整梯度 / reduce 缓冲。参数 all-gather、梯度 reduce 均为设备间通信，与 H2D / D2H 分开。</li><li>常驻权重、全量梯度 shard 及未 swap 状态计入所有阶段；临时 gather / reduce 视为独立缓冲。当前单位的激活与已保存激活按生命周期累加；swap 的激活在前向 D2H 完成后释放，在反向恢复。此处不建模 storage 复用或 allocator 碎片细节。</li><li>表格未覆盖的 kernel workspace、EP 通信暂存、梯度累积的额外转换、优化器实现缓冲等，用“其他 HBM 预留”补充。默认 2 GiB 只是占位，需用实测校准。</li><li>模型不包含重计算。FP32 logits 按完整 seq_length × micro_batch_size × vocab_size 保存，与表格一致；实际融合 loss 可能减少这一项。KDA 内核内部 state / 中间张量若未在表中列出，也不自动补全。</li></ul>
-<h3>相对原表的明确修正</h3><ul><li>I32 已包含 /EP，不能将 I55 再直接 /W 当作全局参数分片。全局参数从各子项重建；pre/post norm 按总层数计；final norm 跟随 hidden size。</li><li>优化器状态可选 Adam 12 bytes/参数（FP32 master + momentum + velocity）或 Muon 8 bytes/参数（FP32 master + momentum），按总参数量 / world_size 分片。当前按全模型统一口径计算；梯度为另列的 2 或 4 bytes。</li><li>激活沿用 2.8T 的 P53 汇总：包含 embedding 输入；原 M57 比 P53 少一项 M2。shared expert 数从硬编码 2 改为模型字段，Dense 激活乘实际 Dense 层数。</li><li>MFU 修正 lm head 的 D18→D19，补充 MLA gate、routed gate/up 少计的一路、shared down、router 与 KDA conv。KDA core FLOPs 需填实测实现对应值；未填时显示计算覆盖不完整。</li><li>其他 sheet 仅导入维度。部分方案 MLA + KDA 与总层数不一致，选择时将 MLA 设为“总层数 − KDA”，并提示原值；若 KDA 已超过总层数，则按原 MLA:KDA 比例缩放到总层数。这个默认校准需按实际模型确认，可自行编辑。历史 sheet 的旧版激活公式没有与 2.8T 混用。</li></ul>
+<h3>调度、分片与生命周期</h3><ul><li>共享专家、router、latent down/up 属于非路由专家参数，按 world_size 分片；仅 routed experts 按 EP 再 EP-FSDP 分片。无 tied embedding，所有专家均分配状态，top-K 只影响激活与计算。</li><li>默认每个 micro batch 顺序执行完整前向和反向；梯度累积不叠加多份完整激活。MLA / KDA 按层数均匀穿插，Dense 放在前面。实际排布与 FSDP wrapping 会改变预取峰值。</li><li>反向不把“前一层 grad”当作从 CPU 搬回的梯度：它是额外完整梯度 / reduce 缓冲。参数 all-gather、梯度 reduce 均为设备间通信，与 H2D / D2H 分开。</li><li>常驻权重、全量梯度 shard 及未 swap 状态计入所有阶段；临时 gather / reduce 视为独立缓冲。当前单位的激活与已保存激活按生命周期累加；swap 的激活在前向 D2H 完成后释放，在反向恢复。此处不建模 storage 复用或 allocator 碎片细节。</li><li>表格未覆盖的 kernel workspace、EP 通信暂存、梯度累积的额外转换、优化器实现缓冲等，用“其他 HBM 预留”补充。默认 2 GiB 只是占位，需用实测校准。</li><li>重计算按逐项比例估算容量，另保留边界输入；额外计算耗时尚未估算，MFU 使用基础模型 FLOPs / 实测时间。FP32 logits 按完整 seq_length × micro_batch_size × vocab_size 保存，与表格一致；实际融合 loss 可能减少这一项。KDA 内核内部 state / 中间张量若未在表中列出，也不自动补全。</li></ul>
+<h3>相对原表的明确修正</h3><ul><li>I32 已包含 /EP，不能将 I55 再直接 /W 当作全局参数分片。全局参数从各子项重建；pre/post norm 按总层数计；final norm 跟随 hidden size。</li><li>优化器状态可选 Adam 12 bytes/参数（FP32 master + momentum + velocity）或 Muon 8 bytes/参数（FP32 master + momentum），按总参数量 / world_size 分片。当前按全模型统一口径计算；梯度为另列的 2 或 4 bytes。</li><li>激活以 2.8T 的 P53 汇总为基础，并增加 FP32 moe_gating 输出：包含 embedding 输入；原 M57 比 P53 少一项 M2。shared expert 数从硬编码 2 改为模型字段，Dense 激活乘实际 Dense 层数。</li><li>MFU 修正 lm head 的 D18→D19，补充 MLA gate、routed gate/up 少计的一路、shared down、router 与 KDA conv。KDA core FLOPs 需填实测实现对应值；未填时显示计算覆盖不完整。</li><li>其他 sheet 仅导入维度。部分方案 MLA + KDA 与总层数不一致，选择时将 MLA 设为“总层数 − KDA”，并提示原值；若 KDA 已超过总层数，则按原 MLA:KDA 比例缩放到总层数。这个默认校准需按实际模型确认，可自行编辑。历史 sheet 的旧版激活公式没有与 2.8T 混用。</li></ul>
 <details><summary>配置字段说明</summary><p>公式和配置栏使用相同字段名。MLA / 通用 MoE 字段采用 DeepSeek 配置命名；latent_h、head_dim、conv_size 沿用你的表格字段。num_mla_layers、num_kda_layers、num_moe_layers 是本页的结构计数字段。</p><div class="table-wrap"><table class="detail-table"><thead><tr><th>配置字段</th><th>含义</th><th>当前值</th></tr></thead><tbody id="config-glossary"></tbody></table></div><p>seq_length 是实际训练序列长度；micro_batch_size 是每 rank 单个 micro batch 的样本数；global_batch_size 包含 world_size 和梯度累积次数。moe_token_imbalance_factor 和 kda_core_flops_per_token 是本页的建模输入。</p></details>
 <details><summary>查看 Excel 原始单元格与公式</summary><div class="field-grid"><label>源 sheet<select id="source-sheet"></select></label><label>单元格（如 I55 / J60 / M32 / S54）<input id="source-cell" value="I55" maxlength="12"></label></div><pre id="source-result"></pre><p class="small-note">仅展示文件中的原公式 / 缓存值。多数公式没有缓存结果；缓存值不作为本页计算依据。</p></details>
 <p class="small-note">单文件 HTML，无网络依赖。数据来源：本地工作簿及前述 swap trace 的带宽参考。修改只影响当前页面；使用导出保存配置。</p>
@@ -108,7 +110,7 @@ function configFormula(formula,mode){
 }
 function presets(raw){return raw.sheets.filter(s=>s.name!=='Sheet2').map(s=>{const d={};for(const [k,c]of Object.entries(fields))d[k]=Number(s.cells[c]?.value)||0;if(!d.layers)d.layers=d.denseLayers+Number(s.cells.D6?.value||0);return {name:s.name,model:d,originalMLA:d.mla,originalKDA:d.kda,layerMismatch:d.mla+d.kda!==d.layers,source:s.name};});}
 function normalizedModel(p){const m={...p.model};if(m.kda>m.layers)m.kda=Math.round(m.layers*m.kda/(m.kda+m.mla));m.mla=m.layers-m.kda;return m;}
-function defaults(p){const m=normalizedModel(p);return {preset:p.name,model:m,arch:'hybrid',moeMode:'latent',world:512,ep:32,seq:8192,mbs:1,accum:1,gradBytes:4,gradShardBytes:4,optimizerType:'adam',actSwap:false,optSwap:true,actRatios:{},optBatchGiB:3,optBuffers:1,paramPrefetch:true,backParamPrefetch:true,gradPrefetch:true,actPrefetch:true,d2hQueue:0,unit:'layer',hbmGiB:0,ddrGiB:0,ranksPerHost:8,reserveGiB:2,h2d:36.95532366,d2h:64.632684,IOLimit:0,ioMode:'serial',targetMFU:45,peakTF:432,stepSeconds:0,trainFactor:3,kdaCoreFLOPs:0,flopMode:'corrected',imbalance:1};}
+function defaults(p){const m=normalizedModel(p);return {preset:p.name,model:m,arch:'hybrid',moeMode:'latent',world:512,ep:32,seq:8192,mbs:1,accum:1,gradBytes:4,gradShardBytes:4,optimizerType:'adam',actSwap:false,actRecompute:false,recomputeRatios:{},optSwap:true,actRatios:{},optBatchGiB:3,optBuffers:1,paramPrefetch:true,backParamPrefetch:true,gradPrefetch:true,actPrefetch:true,d2hQueue:0,unit:'layer',hbmGiB:0,ddrGiB:0,ranksPerHost:8,reserveGiB:2,h2d:36.95532366,d2h:64.632684,IOLimit:0,ioMode:'serial',targetMFU:45,peakTF:432,stepSeconds:0,trainFactor:3,kdaCoreFLOPs:0,flopMode:'corrected',imbalance:1};}
 function dimensions(c){const m={...c.model};if(c.arch==='mla'){m.mla=m.layers;m.kda=0;}if(c.arch==='kda'){m.kda=m.layers;m.mla=0;}return m;}
 function calculate(c){
  const optimizerType=c.optimizerType??'adam',optimizerSpec=optimizers[optimizerType];
@@ -129,7 +131,12 @@ function calculate(c){
  for(const k of ['reserveGiB','hbmGiB','ddrGiB','stepSeconds','kdaCoreFLOPs','IOLimit'])if(!Number.isFinite(c[k])||c[k]<0)errors.push(`${k} 不能小于零`);
  if(c.targetMFU>100)errors.push('目标 MFU 不能超过 100%');
  if(c.imbalance<1)errors.push('MoE token 不均衡系数必须 ≥ 1');
- for(const v of Object.values(c.actRatios))if(!Number.isFinite(v)||v<0||v>100)errors.push('激活 swap 比例必须在 0–100%');
+ for(const v of Object.values(c.actRatios))if(!Number.isFinite(v)||v<0||v>100)errors.push('激活 offload 比例必须在 0–100%');
+ for(const v of Object.values(c.recomputeRatios||{}))if(!Number.isFinite(v)||v<0||v>100)errors.push('激活重计算比例必须在 0–100%');
+ for(const id of new Set([...Object.keys(c.actRatios),...Object.keys(c.recomputeRatios||{})])){
+  const off=c.actSwap?Number(c.actRatios[id]||0):0,rec=c.actRecompute?Number(c.recomputeRatios?.[id]||0):0;
+  if(off+rec>100+1e-8)errors.push(`激活项 ${id} 的 offload + 重计算比例不能超过 100%`);
+ }
  if(errors.length)return {errors,warnings};
  const optBytesPerParam=optimizerSpec.bytes;
  const nMoE=c.moeMode==='dense'?0:L-m.denseLayers, nDense=L-nMoE, latent=c.moeMode==='latent', a=latent?m.latent:h;
@@ -156,13 +163,14 @@ function calculate(c){
  const groupNames=['MLA','KDA','MoE','Dense','Norm','Embedding','LM head'];
  const groups=groupNames.map(name=>{const rows=pp.filter(x=>x.group===name);const params=sum(rows,'total');return {name,params,paramBytes:2*params/W,gradBytes:c.gradShardBytes*params/W,optBytes:optBytesPerParam*params/W,expertParams:sum(rows.filter(x=>x.expert),'total'),rows};});
  // Saved tensors follow the 2.8T sheet; FlashAttention scores and latent-up output are excluded there.
- const ar=[]; const addA=(id,group,name,elements,count,formula,ref,bytes=2,note='')=>{const per=elements*bytes,ratio=c.actSwap?(Number(c.actRatios[id]||0)/100):0;ar.push({id,group,name,elements,count,bytes,per,total:per*count,off:per*ratio,offTotal:per*count*ratio,ratio,formula:configFormula(formula,c.moeMode),ref,note});};
+ const ar=[]; const addA=(id,group,name,elements,count,formula,ref,bytes=2,note='')=>{const per=elements*bytes,ratio=c.actSwap?(Number(c.actRatios[id]||0)/100):0,recomputeRatio=c.actRecompute?Number(c.recomputeRatios?.[id]||0)/100:0;ar.push({recomputeRatio,recompute:per*recomputeRatio,recomputeTotal:per*count*recomputeRatio,id,group,name,elements,count,bytes,per,total:per*count,off:per*ratio,offTotal:per*count*ratio,ratio,formula:configFormula(formula,c.moeMode),ref,note});};
  const ac=(id,group,name,e,count,f,ref,bytes=2,note='')=>addA(id,group,name,e,count,f,ref,bytes,note);
  ac('embed','Embedding','embedding / pre-norm 输入',t*h,1,'S × B × H','N2');
  ac('norm_pre','Norm','pre-norm 输出',t*h,L,'S × B × H','N3');ac('norm_post','Norm','post-norm 输出',t*h,L,'S × B × H','N4');
  [ ['q_a',t*m.qRank,'T × Rq',6],['q_norm',t*m.qRank,'T × Rq',7],['kv_a',t*(m.kvRank+m.rope),'T × (Rkv + Dr)',8],['kv_norm',t*m.kvRank,'T × Rkv',9],['q_b',t*m.heads*(m.nope+m.rope),'T × Nh × (Dn + Dr)',10],['kv_b',t*m.heads*(m.nope+m.vDim),'T × Nh × (Dn + Dv)',11],['o_proj',t*h,'T × H',12],['attention output',t*m.heads*(m.vDim+m.rope),'T × Nh × (Dv + Dr)',14],['gated linear',t*m.heads*m.vDim,'T × Nh × Dv',71],['sigmoid',t*m.heads*m.vDim,'T × Nh × Dv',72],['q/k concat + v pad',t*m.heads*(m.nope+m.rope)*3,'3 × T × Nh × (Dn + Dr)',73],['residual',t*h,'T × H',74] ].forEach(x=>ac('mla'+x[3],'MLA',x[0],x[1],m.mla,x[2],'N'+x[3]));
  [['gate',t*m.denseH,15],['up',t*m.denseH,16],['down',t*h,17],['activation',t*m.denseH,18]].forEach(x=>ac('dense'+x[2],'Dense',x[0],x[1],nDense,x[2]===17?'T × H':'T × Fdense','M'+x[2]));
  const dispatch=c.imbalance, moeNote='路由 token 按均衡 EP 估算，不再除以 EP；不均衡系数仅作用于 dispatched token。';
+ ac('moe_gating','MoE','moe_gating logits（FP32）',t*m.experts,nMoE,'T × E','补充：router 输出',4,'[seq_length, micro_batch_size, hidden_size] × [hidden_size, n_routed_experts] → [seq_length, micro_batch_size, n_routed_experts]；计 FP32 输出，不除 EP，不乘 top-K；router 权重已在参数中计入。');
  if(latent)ac('moe20','MoE','latent down',t*a,nMoE,'T × A','N20');
  ac('moe21','MoE','permute',t*a*m.topK*dispatch,nMoE,'T × A × K × η','N21',2,moeNote);
  ac('moe22','MoE','FC1 gate + up',t*m.topK*m.moeH*2*dispatch,nMoE,'2 × T × K × Fmoe × η','N22',2,moeNote);
@@ -173,11 +181,15 @@ function calculate(c){
  ac('moe29','MoE','shared activation',t*m.moeH*m.shared,nMoE,'T × Fmoe × Eshared','N29');
  [ ['q',t*m.heads*m.headDim,'T × Nh × Dk',37],['k',t*m.heads*m.headDim,'T × Nh × Dk',38],['v',t*m.heads*m.headDim,'T × Nh × Dk',39],['q conv',t*m.heads*m.headDim,'T × Nh × Dk',40],['k conv',t*m.heads*m.headDim,'T × Nh × Dk',41],['v conv',t*m.heads*m.headDim,'T × Nh × Dk',42],['f_a',t*m.headDim,'T × Dk',44],['f_b',t*m.heads*m.headDim,'T × Nh × Dk',45],['b_proj',t*m.heads,'T × Nh',47],['g_proj',t*m.heads*m.headDim,'T × Nh × Dk',48],['o_norm',t*m.heads*m.headDim,'T × Nh × Dk',49],['o_proj',t*h,'T × H',50],['qkv SiLU',3*t*m.heads*m.headDim,'3 × T × Nh × Dk',76],['qk L2 norm',2*t*m.heads*m.headDim,'2 × T × Nh × Dk',77],['b_proj SiLU',t*m.heads,'T × Nh',78],['gated sigmoid',t*m.heads*m.headDim,'T × Nh × Dk',79],['chunk output',t*m.heads*m.headDim,'T × Nh × Dk',80] ].forEach(x=>ac('kda'+x[3],'KDA',x[0],x[1],m.kda,x[2],'N'+x[3]));
  ac('lmhead','LM head','FP32 logits',t*m.vocab,1,'T × V','M35',4);
- const totalAct=sum(ar,'total'),offAct=sum(ar,'offTotal');
- const actByGroup={};for(const name of groupNames){const rows=ar.filter(x=>x.group===name);actByGroup[name]={all:sum(rows,'per'),off:sum(rows,'off')};}
+ const totalAct=sum(ar,'total'),offAct=sum(ar,'offTotal'),recomputedAct=sum(ar,'recomputeTotal');
+ const actByGroup={};for(const name of groupNames){const rows=ar.filter(x=>x.group===name);actByGroup[name]={all:sum(rows,'per'),off:sum(rows,'off'),recompute:sum(rows,'recompute')};}
  const paramPer=name=>sum(pp.filter(x=>x.group===name&&x.count>0),'n');
- const units=[];const unit=(label,group,pFull,act,off,index)=>({label,group,pFull,act,off,keep:act-off,index});
- units.push(unit('Embedding','Embedding',paramPer('Embedding'),actByGroup.Embedding.all,actByGroup.Embedding.off,0));
+ const units=[];const unit=(label,group,pFull,act,off,index,recompute=0)=>{
+  // Conservative independent BF16 hidden checkpoint for each recomputed FSDP unit.
+  const checkpoint=recompute>0?2*t*h:0;
+  return {label,group,pFull,act,off,recompute,checkpoint,keep:Math.max(0,act-off-recompute)+checkpoint,index};
+ };
+ units.push(unit('Embedding','Embedding',paramPer('Embedding'),actByGroup.Embedding.all,actByGroup.Embedding.off,0,actByGroup.Embedding.recompute));
  let kdaCount=0;
  for(let i=0;i<L;i++){
   const isKDA=Math.floor((i+1)*m.kda/L)>Math.floor(i*m.kda/L);if(isKDA)kdaCount++;
@@ -185,12 +197,13 @@ function calculate(c){
   const pa=paramPer(att)+2*h;
   const pff=ff==='Dense'?paramPer('Dense'):pp.filter(x=>x.group==='MoE').reduce((v,x)=>v+x.n/(x.expert?EP:1),0);
   const norm=actByGroup.Norm; // pre/post only; no saved final norm in source
-  const aa=actByGroup[att].all+norm.all,ao=actByGroup[att].off+norm.off;
+  const aa=actByGroup[att].all+norm.all,ao=actByGroup[att].off+norm.off,arc=actByGroup[att].recompute+norm.recompute;
   if(c.unit==='module'){
-   units.push(unit(`L${i+1} ${att}`,att,pa,aa,ao,i+1));units.push(unit(`L${i+1} ${ff}`,ff,pff,actByGroup[ff].all,actByGroup[ff].off,i+1));
-  }else units.push(unit(`L${i+1} ${att} + ${ff}`,att,pa+pff,aa+actByGroup[ff].all,ao+actByGroup[ff].off,i+1));
+   units.push(unit(`L${i+1} ${att}`,att,pa,aa,ao,i+1,arc));units.push(unit(`L${i+1} ${ff}`,ff,pff,actByGroup[ff].all,actByGroup[ff].off,i+1,actByGroup[ff].recompute));
+  }else units.push(unit(`L${i+1} ${att} + ${ff}`,att,pa+pff,aa+actByGroup[ff].all,ao+actByGroup[ff].off,i+1,actByGroup[ff].recompute));
  }
- units.push(unit('Final norm + LM head','LM head',h+paramPer('LM head'),actByGroup['LM head'].all,actByGroup['LM head'].off,L+1));
+ units.push(unit('Final norm + LM head','LM head',h+paramPer('LM head'),actByGroup['LM head'].all,actByGroup['LM head'].off,L+1,actByGroup['LM head'].recompute));
+ const checkpointAct=sum(units,'checkpoint'),retainedAct=sum(units,'keep');
  const state={param:2*P/W,grad:c.gradShardBytes*P/W,opt:c.optSwap?0:optBytesPerParam*P/W,reserve:c.reserveGiB*GiB};
  const base=sum(Object.values(state));const events=[];
  const event=(phase,u,activation,params,grad,opt=0,workspace=0)=>{const parts={...state,activation,gather:params,reduce:grad,optStage:opt,workspace};const bytes=sum(Object.values(parts));const e={phase,label:u.label,bytes,parts};events.push(e);return e;};
@@ -198,11 +211,11 @@ function calculate(c){
  for(let i=0;i<units.length;i++){
   const u=units[i],next=units[i+1];const queue=units.slice(Math.max(0,i-c.d2hQueue),i).reduce((v,x)=>v+x.off,0);
   // Current layer's selected activations remain until its D2H completes.
-  event('forward',u,kept+u.act+queue,2*(u.pFull+(c.paramPrefetch&&next?next.pFull:0)),0);kept+=u.keep;
+  event('forward',u,kept+u.act+u.checkpoint+queue,2*(u.pFull+(c.paramPrefetch&&next?next.pFull:0)),0);kept+=u.keep;
  }
  for(let i=units.length-1;i>=0;i--){
   const u=units[i],prev=units[i-1];
-  event('backward',u,kept+u.off+(c.actSwap&&c.actPrefetch&&prev?prev.off:0),2*(u.pFull+(c.backParamPrefetch&&prev?prev.pFull:0)),c.gradBytes*(u.pFull+(c.gradPrefetch&&prev?prev.pFull:0)));
+  event('backward',u,kept+u.off+u.recompute+(c.actSwap&&c.actPrefetch&&prev?prev.off:0),2*(u.pFull+(c.backParamPrefetch&&prev?prev.pFull:0)),c.gradBytes*(u.pFull+(c.gradPrefetch&&prev?prev.pFull:0)));
   kept-=u.keep;
  }
  const optTotal=optBytesPerParam*P/W,batchState=Math.min(c.optBatchGiB*GiB,optTotal),batchN=batchState/optBytesPerParam;
@@ -242,8 +255,9 @@ function calculate(c){
  if(c.kdaCoreFLOPs===0&&m.kda>0)warnings.push('KDA chunk / recurrent core FLOPs 尚未计入；MFU 仅对应已列出的计算项。');
  if(activationIO>computeSeconds)warnings.push('激活搬运时间超过所设计算窗口；即使理想重叠也需要等待，有限缓冲会带来停顿。');
  if(measuredMFU>1)warnings.push('MFU 超过 100%；请核对 step 时间、峰值算力、GBS 与 FLOPs 口径。');
+ if(recomputedAct>0)warnings.push('重计算已计入激活释放、边界输入保留和反向重建；额外 FLOPs / 耗时尚未估算，时间范围未包含这部分开销。');
  if(c.IOLimit&&ioTime>c.IOLimit)warnings.push('搬运服务时间超出你设置的每 step IO 预算。');
- return {errors,warnings,optimizerType,optimizerSpec,optBytesPerParam,m,P,Pexp,groups,pp,ar,units,totalAct,offAct,state,base,peak,forward,backward,optimizer,events,optTotal,batchState,hostPerRank,hostPerHost,optHost,traffic,h2dTime,d2hTime,ioTime,activationIO,optimizerIO,capacity,gbs,flops,fwdFlops,trainingFlops,ideal,computeSeconds,measuredMFU,minStep,noOverlap,nMoE,nDense,epFSDP:W/EP,ioPerHostH:c.h2d*c.ranksPerHost,ioPerHostD:c.d2h*c.ranksPerHost};
+ return {errors,warnings,optimizerType,optimizerSpec,optBytesPerParam,m,P,Pexp,groups,pp,ar,units,totalAct,offAct,recomputedAct,checkpointAct,retainedAct,state,base,peak,forward,backward,optimizer,events,optTotal,batchState,hostPerRank,hostPerHost,optHost,traffic,h2dTime,d2hTime,ioTime,activationIO,optimizerIO,capacity,gbs,flops,fwdFlops,trainingFlops,ideal,computeSeconds,measuredMFU,minStep,noOverlap,nMoE,nDense,epFSDP:W/EP,ioPerHostH:c.h2d*c.ranksPerHost,ioPerHostD:c.d2h*c.ranksPerHost};
 }
 function suggest(c){
  const r=calculate(c);if(r.errors.length)return {error:'请先修正配置。'};
@@ -252,8 +266,8 @@ function suggest(c){
  const servicePerByte=c.ioMode==='duplex'?Math.max(1/c.h2d,1/c.d2h)/GB:(1/c.h2d+1/c.d2h)/GB;
  if(c.IOLimit>0)allowance=Math.min(allowance,(c.IOLimit/servicePerByte-r.optHost)/c.accum);
  if(allowance<0)return {error:'仅优化器 swap 已超出 DDR 或 IO 预算；请先调整容量、带宽、IO 预算或优化器策略。'};
- const maxRatio=Math.floor(Math.min(1,allowance/r.totalAct)*1000)/10;
- const candidate=ratio=>({...c,actSwap:true,actRatios:Object.fromEntries(r.ar.map(a=>[a.id,ratio]))});
+ const maxRatio=Math.floor(Math.min(1,allowance/(r.totalAct-r.recomputedAct||1))*1000)/10;
+ const candidate=ratio=>({...c,actSwap:true,actRatios:Object.fromEntries(r.ar.map(a=>[a.id,ratio*(1-a.recomputeRatio)]))});
  let lo=0,hi=maxRatio;const zero=calculate(candidate(0)),upper=calculate(candidate(hi));
  if(zero.peak.bytes<=c.hbmGiB*GiB)hi=0;
  else if(upper.peak.bytes<=c.hbmGiB*GiB){for(let i=0;i<30;i++){const mid=(lo+hi)/2;if(calculate(candidate(mid)).peak.bytes<=c.hbmGiB*GiB)hi=mid;else lo=mid;}hi=Math.min(maxRatio,Math.ceil(hi*10)/10);}
@@ -311,7 +325,7 @@ function render(){
  const openIds=[...document.querySelectorAll('details[id][open]')].map(e=>e.id);result=MM.calculate(cfg);const r=result;
  $('#errors').hidden=!r.errors.length;$('#results').hidden=!!r.errors.length;
  if(r.errors.length){$('#errors').innerHTML='<strong>请先修正配置</strong><ul>'+r.errors.map(e=>`<li>${esc(e)}</li>`).join('')+'</ul>';return;}
- const baseline=MM.calculate({...cfg,optSwap:false,actSwap:false});
+ const baseline=MM.calculate({...cfg,optSwap:false,actSwap:false,actRecompute:false});
  const optName=r.optimizerSpec.name;
  parts.opt[0]=`常驻 ${optName} 状态`;parts.optStage[0]=`${optName} swap 缓冲`;parts.workspace[0]=`${optName} 更新工作区`;
  $('#optimizer-foot').textContent=`${optName} · ${r.optBytesPerParam} bytes/参数`;
@@ -334,39 +348,50 @@ function render(){
  renderSharding(r);
  $('#param-body').innerHTML=r.groups.map(g=>`<tr><td><span class="group-tag" style="background:${colors[g.name]}"></span>${g.name}<small class="module-shard-route">${g.name==='MoE'?'路由专家 EP → EP-FSDP；其余 FSDP':'FSDP ÷ '+cfg.world}</small></td><td>${paramB(g.params)}</td><td>${gi(g.paramBytes)}</td><td>${gi(g.gradBytes)}</td><td><button data-param="${esc(g.name)}" aria-expanded="false" aria-controls="param-${g.name.replaceAll(' ','')}">公式与分片 ↗</button></td></tr>${parameterDetails(g,r)}`).join('');
  $('#param-total').innerHTML=`<tr><td>全模型汇总</td><td>${paramB(r.P)}</td><td>${gi(r.state.param)}</td><td>${gi(r.state.grad)}</td><td></td></tr>`;
- $('#opt-summary').innerHTML=mini(`理论可卸载的 ${optName} 总状态`,`${gi(r.optTotal)} GiB / rank`)+mini('当前前向 / 反向常驻状态',`${gi(r.state.opt)} GiB`)+mini('更新时恢复的状态缓冲',`${gi(r.optimizer.parts.optStage)} GiB`);
- $('#act-summary').innerHTML=mini('全模型保存张量总量 / micro batch',`${gi(r.totalAct)} GiB`)+mini('计划卸载 / 保存张量比例',`${gi(r.offAct)} GiB · ${pct(r.offAct/r.totalAct)}`)+mini('前向结束保留在 HBM 的激活',`${gi(r.totalAct-r.offAct)} GiB`);
+ $('#opt-summary').innerHTML=mini(`理论可卸载的 ${optName} 总状态`,`${gi(r.optTotal)} GiB / rank`)+mini('前反向 HBM 常驻优化器状态',`${gi(r.state.opt)} GiB`)+mini('更新期间 HBM 优化器状态缓冲',`${gi(r.optimizer.parts.optStage)} GiB`);
+ $('#act-summary').innerHTML=mini('未优化的保存激活总量 / micro batch',`${gi(r.totalAct)} GiB`)+mini('激活 offload 量 / 卸载比例',`${gi(r.offAct)} GiB · ${pct(r.offAct/r.totalAct)}`)+mini('重计算替代的保存激活',`${gi(r.recomputedAct)} GiB`)+mini('重计算边界输入（额外保留）',`${gi(r.checkpointAct)} GiB`)+mini('前向结束保留的激活（含边界输入）',`${gi(r.retainedAct)} GiB`);
+ $('#recompute-summary').textContent=`重计算替代 ${gi(r.recomputedAct)} GiB；另保留边界输入 ${gi(r.checkpointAct)} GiB。反向当前单位的重建激活仍计入峰值。`;
+ $('#offload-summary').textContent=`激活 DDR ${gi(r.offAct)} GiB / rank；每 step 每方向搬运 ${gi(r.traffic.activation)} GiB。`;
  $('#io-cards').innerHTML=[['每 step H2D',gi(r.traffic.h2d),'GiB / rank',`${sec(r.h2dTime)} s 服务时间`],['每 step D2H',gi(r.traffic.d2h),'GiB / rank',`${sec(r.d2hTime)} s 服务时间`],['搬运合计下限',sec(r.ioTime),'s / step',cfg.ioMode==='serial'?'两方向相加':'理想双向重叠取较大值'],['计算 + IO 理论范围',`${fmt(r.minStep,2)}–${fmt(r.noOverlap,2)}`,'s / step','激活理想重叠 ↔ 完全不重叠']].map(x=>`<div class="io-item"><small>${x[0]}</small><strong>${x[1]} <em>${x[2]}</em></strong><small>${x[3]}</small></div>`).join('');
  function budget(label,bytes,cap){const ratio=cap?bytes/(cap*MM.GiB):0;return `<div class="budget"><div class="row-between"><span>${label}</span><span>${gi(bytes)} / ${cap?fmt(cap):'待填'} GiB ${cap?'· '+pct(ratio):''}</span></div><div class="budget-track"><div style="width:${Math.min(100,ratio*100)}%;background:${ratio>1?'#bc6557':'var(--teal)'}"></div></div></div>`;}
  $('#budget-bars').innerHTML=budget('单卡 HBM 峰值',r.peak.bytes,cfg.hbmGiB)+budget('每 Host swap DDR',r.hostPerHost,cfg.ddrGiB);
- $('#io-note').textContent=`若同 Host ${cfg.ranksPerHost} 个 rank 同时达到所填带宽，需要聚合 H2D ${fmt(r.ioPerHostH)}、D2H ${fmt(r.ioPerHostD)} GB/s。上方时间范围只覆盖估算的前后向计算与 swap，未加入 FSDP / EP 通信、${optName} 计算和调度开销；不是实测 step 预测区间。`;
+ $('#io-note').textContent=`若同 Host ${cfg.ranksPerHost} 个 rank 同时达到所填带宽，需要聚合 H2D ${fmt(r.ioPerHostH)}、D2H ${fmt(r.ioPerHostD)} GB/s。上方时间范围只覆盖估算的前后向计算与 swap，未加入重计算额外耗时、FSDP / EP 通信、${optName} 计算和调度开销；不是实测 step 预测区间。`;
  $('#io-formulas').innerHTML=`<div class="formula-strip">Aoff = Σ 每项激活字节 × 层数 × 卸载比例 = ${gi(r.offAct)} GiB<br>Ooff = optimizer swap ? ${r.optBytesPerParam} × 总参数量 / world_size : 0 = ${gi(r.optHost)} GiB<br>DDR / Host = (Aoff + Ooff) × ranks/Host = ${gi(r.hostPerHost)} GiB<br>每方向每 step 字节 = Aoff × 梯度累积次数 + Ooff = ${gi(r.traffic.h2d)} GiB<br>tH2D = 字节 / (H2D GB/s × 10⁹)；tD2H 同理<br>计算窗口估算 C = training FLOPs / (W × peak FLOPS × 目标 MFU) = ${sec(r.computeSeconds)} s<br>激活 IO = ${sec(r.activationIO)} s；优化器 IO = ${sec(r.optimizerIO)} s<br>理想下限 = max(C, 激活 IO) + 优化器 IO；无重叠 = C + 全部 IO</div><p class="small-note">DDR 假设 CPU 状态存储同时充当传输源 / 目标，不额外复制一套 pinned staging。Host 上其他任务、数据加载、checkpoint 必须从“可用 DDR”预先扣除。双向重叠还依赖 Host 内存总线与 DMA 资源，不能仅靠开关保证。</p>`;
  $('#act-total').textContent=`${gi(r.totalAct)} GiB 保存张量 / rank`;
  $('#act-details').innerHTML=r.groups.map(g=>{
- const rows=r.ar.filter(x=>x.group===g.name),total=rows.reduce((a,x)=>a+x.total,0),off=rows.reduce((a,x)=>a+x.offTotal,0);if(!rows.length)return '';
- return `<details id="act-${g.name.replaceAll(' ','')}"><summary><span class="group-tag" style="background:${colors[g.name]}"></span>${g.name}<span>${gi(total)} GiB · swap ${gi(off)} GiB</span></summary><div class="ratio-head">整组卸载比例 ${[0,50,100].map(n=>`<button data-group="${esc(g.name)}" data-ratio="${n}">${n}%</button>`).join('')}</div><div class="table-wrap"><table class="detail-table"><thead><tr><th>保存张量</th><th>元素数公式</th><th>dtype</th><th>层数</th><th>单层 GiB</th><th>合计 GiB</th><th>Swap %</th></tr></thead><tbody>${rows.map(a=>`<tr><td title="${esc(a.note)}">${esc(a.name)}</td><td><code>${esc(a.formula)}</code></td><td>${a.bytes===4?'FP32':'BF16'}</td><td>${a.count}</td><td>${gi(a.per)}</td><td>${gi(a.total)}</td><td><input aria-label="${g.name} ${esc(a.name)} swap 百分比" class="ratio-input" data-act="${a.id}" type="number" min="0" max="100" step="5" value="${cfg.actRatios[a.id]||0}"></td></tr>`).join('')}</tbody></table></div><p class="small-note">激活字节 = 元素数 × dtype bytes × 对应层数；swap 关闭时这些选择暂不生效。</p></details>`;
+ const rows=r.ar.filter(x=>x.group===g.name),total=rows.reduce((a,x)=>a+x.total,0),off=rows.reduce((a,x)=>a+x.offTotal,0),rec=rows.reduce((a,x)=>a+x.recomputeTotal,0);if(!rows.length)return '';
+ return `<details id="act-${g.name.replaceAll(' ','')}"><summary><span class="group-tag" style="background:${colors[g.name]}"></span>${g.name}<span>${gi(total)} GiB · offload ${gi(off)} · 重计算 ${gi(rec)}</span></summary><div class="ratio-head">整组 offload 比例 ${[0,50,100].map(n=>`<button data-group="${esc(g.name)}" data-ratio="${n}">${n}%</button>`).join('')}</div><div class="ratio-head">整组重计算比例 ${[0,50,100].map(n=>`<button data-recompute-group="${esc(g.name)}" data-ratio="${n}">${n}%</button>`).join('')}</div><div class="table-wrap"><table class="detail-table"><thead><tr><th>保存张量</th><th>元素数公式</th><th>dtype</th><th>层数</th><th>单层 GiB</th><th>合计 GiB</th><th>Offload %</th><th>重计算 %</th></tr></thead><tbody>${rows.map(a=>`<tr><td title="${esc(a.note)}">${esc(a.name)}${a.id==='moe_gating'?'<small>输出 [seq_length, micro_batch_size, n_routed_experts]；FP32</small>':''}</td><td><code>${esc(a.formula)}</code></td><td>${a.bytes===4?'FP32':'BF16'}</td><td>${a.count}</td><td>${gi(a.per)}</td><td>${gi(a.total)}</td><td><input aria-label="${g.name} ${esc(a.name)} swap 百分比" class="ratio-input" data-act="${a.id}" type="number" min="0" max="100" step="5" value="${cfg.actRatios[a.id]||0}"></td><td><input aria-label="${g.name} ${esc(a.name)} 重计算百分比" class="ratio-input" data-recompute="${a.id}" type="number" min="0" max="100" step="5" value="${cfg.recomputeRatios?.[a.id]||0}"></td></tr>`).join('')}</tbody></table></div><p class="small-note">激活字节 = 元素数 × dtype bytes × 对应层数。Offload 与重计算的比例相加不超过 100%；调整一项时自动下调另一项，开关关闭时对应比例不生效。</p></details>`;
  }).join('');
  const fullF=r.flops.reduce((a,x)=>a+x.f,0),originalF=r.flops.reduce((a,x)=>a+x.original,0);
- $('#mfu-cards').innerHTML=card('每 step 前向 FLOPs',fmt(r.fwdFlops/1e15,2),'PFLOP',`global_batch_size ${r.gbs} · ${cfg.flopMode==='corrected'?'修正口径':'原表漏项口径'}`)+card('每 step 训练 FLOPs',fmt(r.trainingFlops/1e15,2),'PFLOP',`前向 × ${cfg.trainFactor}；KDA core ${cfg.kdaCoreFLOPs?'已手工补充':'未补充'}`)+card('实测 MFU',r.measuredMFU===null?'待填':fmt(r.measuredMFU*100,2),r.measuredMFU===null?'':'%',r.measuredMFU===null?'填写实测 step 秒数后计算':'含 step 内通信、swap 与等待')+card('所设 MFU 下的计算时间',fmt(r.computeSeconds,2),'s',`目标 ${cfg.targetMFU}% · 原/修正前向 ${fmt(originalF/1e15,1)} / ${fmt(fullF/1e15,1)} PFLOP`);
+ $('#mfu-cards').innerHTML=card('每 step 前向 FLOPs',fmt(r.fwdFlops/1e15,2),'PFLOP',`global_batch_size ${r.gbs} · ${cfg.flopMode==='corrected'?'修正口径':'原表漏项口径'}`)+card('每 step 训练 FLOPs',fmt(r.trainingFlops/1e15,2),'PFLOP',`前向 × ${cfg.trainFactor}；KDA core ${cfg.kdaCoreFLOPs?'已手工补充':'未补充'}`)+card('实测 MFU（基础模型 FLOPs）',r.measuredMFU===null?'待填':fmt(r.measuredMFU*100,2),r.measuredMFU===null?'':'%',r.measuredMFU===null?'填写实测 step 秒数后计算':'基础模型 FLOPs / 实测时间；时间包含重计算、通信与等待')+card('所设 MFU 下的计算时间',fmt(r.computeSeconds,2),'s',`目标 ${cfg.targetMFU}% · 原/修正前向 ${fmt(originalF/1e15,1)} / ${fmt(fullF/1e15,1)} PFLOP`);
  $('#flop-details').innerHTML=['MLA','KDA','MoE','Dense','LM head'].map(g=>{const rows=r.flops.filter(x=>x.group===g);return `<details id="flop-${g.replaceAll(' ','')}"><summary>${g} FLOPs<span>${fmt(rows.reduce((a,x)=>a+x[cfg.flopMode==='corrected'?'f':'original'],0)/1e15,3)} PFLOP / forward</span></summary><div class="table-wrap"><table class="detail-table"><thead><tr><th>计算项</th><th>计算公式</th><th>原表 PFLOP</th><th>修正 PFLOP</th></tr></thead><tbody>${rows.map(f=>`<tr><td>${esc(f.name)}</td><td><code>${esc(f.formula)}</code>${f.note?`<small>${esc(f.note)}</small>`:''}</td><td>${fmt(f.original/1e15,4)}</td><td>${fmt(f.f/1e15,4)}</td></tr>`).join('')}</tbody></table></div></details>`;}).join('');
  for(const id of openParams){const e=document.getElementById(id);if(e){e.hidden=false;document.querySelector(`[aria-controls="${id}"]`).setAttribute('aria-expanded','true');}}
  for(const id of openIds){const e=document.getElementById(id);if(e)e.open=true;}
 }
+function setActivationRatio(id,value,recompute=false){
+ const n=Number(value);if(!Number.isFinite(n))return;
+ const target=recompute?'recomputeRatios':'actRatios',other=recompute?'actRatios':'recomputeRatios';
+ cfg[target]??={};cfg[other]??={};cfg[target][id]=Math.min(100,Math.max(0,n));
+ cfg[other][id]=Math.min(cfg[other][id]||0,100-cfg[target][id]);
+}
 document.addEventListener('change',e=>{
  const el=e.target;
- if(el.id==='preset'){const p=PRESETS.find(p=>p.name===el.value);cfg.preset=p.name;cfg.model=MM.normalizedModel(p);cfg.actRatios={};sync();render();return;}
+ if(el.id==='preset'){const p=PRESETS.find(p=>p.name===el.value);cfg.preset=p.name;cfg.model=MM.normalizedModel(p);cfg.actRatios={};cfg.recomputeRatios={};sync();render();return;}
  if(el.dataset.model){cfg.model[el.dataset.model]=Number(el.value);render();return;}
  if(el.dataset.key){cfg[el.dataset.key]=el.type==='checkbox'?el.checked:(el.type==='number'||el.hasAttribute('data-number')?Number(el.value):el.value);render();return;}
- if(el.dataset.act){cfg.actRatios[el.dataset.act]=Number(el.value);render();return;}
+ if(el.dataset.act){setActivationRatio(el.dataset.act,el.value);render();return;}
+ if(el.dataset.recompute){setActivationRatio(el.dataset.recompute,el.value,true);render();return;}
  if(el.id==='source-sheet'||el.id==='source-cell')source();
 });
 document.addEventListener('click',e=>{
  const el=e.target.closest('button');if(!el)return;
- if(el.hasAttribute('data-allratio')){for(const row of result.ar)cfg.actRatios[row.id]=Number(el.dataset.allratio);render();}
- if(el.dataset.group){for(const row of result.ar.filter(r=>r.group===el.dataset.group))cfg.actRatios[row.id]=Number(el.dataset.ratio);render();}
+ if(el.hasAttribute('data-allratio')){for(const row of result.ar)setActivationRatio(row.id,el.dataset.allratio);render();}
+ if(el.dataset.group){for(const row of result.ar.filter(r=>r.group===el.dataset.group))setActivationRatio(row.id,el.dataset.ratio);render();}
+ if(el.hasAttribute('data-allrecompute')){for(const row of result.ar)setActivationRatio(row.id,el.dataset.allrecompute,true);render();}
+ if(el.dataset.recomputeGroup){for(const row of result.ar.filter(r=>r.group===el.dataset.recomputeGroup))setActivationRatio(row.id,el.dataset.ratio,true);render();}
  if(el.dataset.param){const row=document.getElementById('param-'+el.dataset.param.replaceAll(' ',''));row.hidden=!row.hidden;el.setAttribute('aria-expanded',String(!row.hidden));}
 });
-$('#suggest').addEventListener('click',()=>{const plan=MM.suggest(cfg);if(plan.error){$('#suggest-note').textContent=plan.error;return;}cfg=plan.config;sync();render();$('#suggest-note').textContent=`已开启激活 swap，并将所有项设为 ${fmt(plan.ratio,1)}%。${plan.fits?'在当前模型下满足 HBM / DDR 约束。':'即使用完当前 DDR / IO 预算仍不能满足 HBM，请增加资源或调整 batch / 序列 / wrapping。'} 峰值 ${gi(plan.peak)} GiB，DDR ${gi(plan.host)} GiB/Host。这是统一比例的起点；还需确认实际 tensor 分块粒度，再逐项调整。`;});
+$('#suggest').addEventListener('click',()=>{const plan=MM.suggest(cfg);if(plan.error){$('#suggest-note').textContent=plan.error;return;}cfg=plan.config;sync();render();$('#suggest-note').textContent=`已开启激活 swap，并将各项未重计算的部分按 ${fmt(plan.ratio,1)}% 卸载。${plan.fits?'在当前模型下满足 HBM / DDR 约束。':'即使用完当前 DDR / IO 预算仍不能满足 HBM，请增加资源或调整 batch / 序列 / wrapping。'} 峰值 ${gi(plan.peak)} GiB，DDR ${gi(plan.host)} GiB/Host。这是对未重计算部分应用统一比例的起点；还需确认实际 tensor 分块粒度，再逐项调整。`;});
 $('#reset').addEventListener('click',()=>{cfg=MM.defaults(PRESETS[0]);sync();render();});
 $('#export').addEventListener('click',()=>{const data={schemaVersion:1,generatedAt:new Date().toISOString(),source:WORKBOOK.source,formulaTemplate:'2.8T',model_config:Object.fromEntries(Object.entries(MM.configFields).map(([key,f])=>[f.name,result.m[key]])),training_config:{world_size:cfg.world,ep_size:cfg.ep,seq_length:cfg.seq,micro_batch_size:cfg.mbs,gradient_accumulation_steps:cfg.accum,global_batch_size:result.gbs,optimizer_type:result.optimizerType},config:cfg,result};const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`memory-model-${cfg.preset}-${cfg.world}ranks.json`;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000);});
 sync();render();source();
