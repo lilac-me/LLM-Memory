@@ -11,6 +11,27 @@
 .detail-table code{line-height:1.9;overflow-wrap:anywhere;padding:6px 8px}
 #config-glossary td:nth-child(2){min-width:220px}
 .formula-strip{overflow-wrap:anywhere}
+
+/* Formula headers and cells use the same alignment and padding. */
+.detail-table th,.detail-table td{padding:12px;vertical-align:top}
+.detail-table th:nth-child(2){text-align:left}
+.parameter-expansion>td{text-align:left;padding:20px;background:#f8fbfc}
+.parameter-detail{min-width:0}
+.parameter-detail h3{margin:8px 0 10px}
+.parameter-detail>.table-wrap{max-width:100%;margin-bottom:24px;background:white}
+.parameter-formulas{table-layout:fixed;min-width:850px}
+.parameter-formulas th,.parameter-formulas td{overflow-wrap:anywhere;white-space:normal}
+.parameter-formulas td:nth-child(2){min-width:0;max-width:none}
+.parameter-formulas code{display:block}
+.sharding-table{min-width:1150px}
+.sharding-table th,.sharding-table td{padding:12px;vertical-align:top}
+.sharding-table th:nth-child(3),.sharding-table td:nth-child(3),.sharding-table th:nth-child(5),.sharding-table td:nth-child(5),.sharding-table th:last-child,.sharding-table td:last-child{text-align:left}
+.sharding-table small,.module-shard-route{display:block;color:var(--muted);font-size:14px;font-weight:400;max-width:230px;white-space:normal}
+.shard-bytes{white-space:nowrap}
+.shard-path ol{list-style:none;margin:16px 0;padding:0}
+.shard-path li{display:flex;flex-wrap:wrap;gap:8px;justify-content:space-between;padding:12px 0;border-top:1px solid var(--line)}
+.shard-path li span{overflow-wrap:anywhere}
+.shard-path li strong{font-variant-numeric:tabular-nums}
 </style></head>
 <body>
 <header><div class="brand"><span class="brand-mark">A</span><span>ATLAS <small>TRAINING MEMORY LAB</small></span></div><div class="header-right"><span class="badge">FSDP × EP</span><span>来源：10T Kimi 显存建模.xlsx</span><button id="reset" class="quiet">重置</button><button id="export">导出配置与结果 ↓</button></div></header>
@@ -62,7 +83,7 @@
 <nav><a href="#overview">总览</a><a href="#parameters">参数与状态</a><a href="#swap">Swap 策略</a><a href="#activation">激活明细</a><a href="#mfu">FLOPs / MFU</a><a href="#assumptions">口径与来源</a></nav>
 <div id="errors" hidden></div><div id="results">
 <section id="overview"><div class="section-head"><h2>单卡显存总览</h2><span id="status" class="badge"></span></div><div class="cards" id="cards"></div><div class="two-col"><article class="panel"><h3>按执行顺序看峰值 <small>GiB / rank</small></h3><div id="timeline"></div><div class="legend"><span><i style="background:var(--teal)"></i>前向</span><span><i style="background:var(--orange)"></i>反向</span><span><i style="background:var(--blue)"></i><span id="optimizer-legend">优化器</span></span></div><p class="small-note">横轴表示计算顺序，不是实际耗时。逐层保存 / 释放激活；以每个计算单位的保守工作集计算峰值。</p></article><article class="panel"><h3>峰值发生在哪里</h3><div id="peak-detail"></div></article></div><div id="warnings"></div></section>
-<section id="parameters"><div class="section-head"><h2>参数、梯度与优化器</h2><span class="muted">所有数值均为每 rank 常驻 shard，另列全局参数</span></div><div class="panel table-wrap"><table><thead><tr><th>模块</th><th>全局参数 / 十亿</th><th>BF16 权重 / GiB</th><th>梯度 / GiB</th><th id="optimizer-column">优化器状态 / GiB</th><th>展开</th></tr></thead><tbody id="param-body"></tbody><tfoot id="param-total"></tfoot></table></div><div class="formula-strip">非 MoE：fsdp_size = world_size<br>路由专家：ep_size × ep_fsdp_size = world_size<br>每 rank 权重字节 = 2 × 总参数量 / world_size<br>每 rank 梯度字节 = 梯度 shard 每元素字节数 × 总参数量 / world_size<br><span id="optimizer-state-formula"></span></div></section>
+<section id="parameters"><div class="section-head"><h2>参数、梯度与优化器</h2><span class="muted">展开模块查看 EP 分配与 FSDP 分片过程</span></div><div id="sharding-paths" class="two-col"></div><p id="sharding-note" class="section-note"></p><div class="panel table-wrap"><table><thead><tr><th>模块</th><th>全局参数 / 十亿</th><th>BF16 权重 / GiB</th><th>梯度 / GiB</th><th id="optimizer-column">优化器状态 / GiB</th><th>展开</th></tr></thead><tbody id="param-body"></tbody><tfoot id="param-total"></tfoot></table></div><div class="formula-strip">非路由专家参数（含 shared experts / router / latent 投影）：fsdp_size = world_size<br>路由专家：ep_size × ep_fsdp_size = world_size<br>每 rank 权重字节 = 2 × 总参数量 / world_size<br>每 rank 梯度字节 = 梯度 shard 每元素字节数 × 总参数量 / world_size<br><span id="optimizer-state-formula"></span></div></section>
 <section id="swap"><div class="section-head"><h2>Swap 策略与资源约束</h2><span class="muted">Offload 节省量与更新 / 恢复缓冲一起计算</span></div><div class="two-col"><article class="panel"><div class="row-between"><h3>优化器状态</h3><label class="switch"><input data-key="optSwap" type="checkbox"><span>Swap</span></label></div><p id="optimizer-description"></p><div class="field-grid"><label>单批 FP32 状态 / GiB<input data-key="optBatchGiB" type="number" min="0.01" step="0.25"></label><label>状态缓冲份数<select data-key="optBuffers" data-number><option value="1">1 · 串行</option><option value="2">2 · 双缓冲</option></select></label></div><div id="opt-summary"></div><p class="small-note">批大小是实现假设，需对齐真实 tensor / bucket 粒度。更新工作区另计每参数 4-byte grad + 2-byte cast 输出。双缓冲只计容量，不默认认为 IO 已重叠。Muon 正交化等额外临时工作区需计入“其他 HBM 预留”。</p></article><article class="panel"><div class="row-between"><h3>保存的激活</h3><label class="switch"><input data-key="actSwap" type="checkbox"><span>Swap</span></label></div><p>在下方按张量项选择卸载比例。当前计算单位仍需完整激活；恢复时计入预取。</p><label>D2H 队列：额外驻留的已完成计算单位<select data-key="d2hQueue" data-number><option value="0">0 · 每单位结束前排空</option><option value="1">1 · 容许滞留一个单位</option><option value="2">2 · 容许滞留两个单位</option></select></label><div id="act-summary"></div><p class="small-note">比例可表示实际可独立搬运的张量块 / tokens，不代表只搬运张量的一部分即可释放整块 storage。有限队列下，带宽不足会阻塞计算。</p></article></div><div class="panel"><div id="io-cards" class="io-grid"></div><div id="budget-bars"></div><p id="io-note" class="small-note"></p><details><summary>查看时间与 DDR 的计算口径</summary><div id="io-formulas"></div></details></div></section>
 <section id="activation"><div class="section-head"><h2>激活公式与细粒度卸载</h2><span id="act-total" class="badge"></span></div><div class="toolbar"><span>所有激活项</span><button data-allratio="0">0%</button><button data-allratio="50">50%</button><button data-allratio="100">100%</button><span class="muted">再展开模块单独调整；百分比按钮不自动开启 Swap</span><button id="suggest">按 HBM / DDR / IO 预算建议比例</button></div><p class="section-note">激活是每个 rank 的本地 micro batch，不除以 world size。保留表中保存张量的口径；Full attention scores（M13）与 latent up（M26）按原表汇总排除。非 2.8T 方案使用其模型维度，并统一套用 2.8T 公式。</p><div id="suggest-note" class="small-note" role="status"></div><p class="small-note">公式直接使用配置字段名，例如 seq_length × micro_batch_size × q_lora_rank；当前值可在左侧“模型结构与维度”中查看。</p><div id="act-details"></div></section>
 <section id="mfu"><div class="section-head"><h2>FLOPs 与 MFU</h2><label class="inline">汇总口径<select data-key="flopMode"><option value="corrected">修正后的投影与 attention 口径</option><option value="original">原表漏项口径复算</option></select></label></div><div class="cards" id="mfu-cards"></div><div class="formula-strip">MFU = 训练 FLOPs / (实测 step 秒数 × world_size × 每卡峰值 FLOPS)<br>训练 FLOPs ≈ 前向 FLOPs × 训练倍数<br>global_batch_size = world_size × micro_batch_size × gradient_accumulation_steps</div><div id="flop-details"></div></section>
@@ -124,6 +145,14 @@ function calculate(c){
  [ ['q / k / v',3*h*m.heads*m.headDim,'3 × H × Nh × Dk','I37:I39'],['q / k / v conv',3*m.heads*m.headDim*m.conv,'3 × Nh × Dk × C','I40:I42'],['A_log',m.heads,'Nh','I43'],['f_a',h*m.headDim,'H × Dk','I44'],['f_b',m.headDim*m.heads*m.headDim,'Dk × Nh × Dk','I45'],['dt_bias',m.heads*m.headDim,'Nh × Dk','I46'],['b_proj',h*m.heads,'H × Nh','I47'],['g_proj',h*m.heads*m.headDim,'H × Nh × Dk','I48'],['o_norm',m.headDim,'Dk','I49'],['o_proj',m.heads*m.headDim*h,'Nh × Dk × H','I50'] ].forEach(x=>addP('KDA',x[0],x[1],m.kda,x[2],x[3]));
  addP('Norm','final norm',h,1,'H','I34');addP('LM head','lm head（不绑 embedding）',h*m.vocab,1,'H × V','I35');
  const sum=(arr,key)=>arr.reduce((x,v)=>x+(key?v[key]:v),0),P=sum(pp,'total'),Pexp=sum(pp.filter(x=>x.expert),'total');
+ // Expose both distribution steps; shared experts/router/latent projections use ordinary FSDP.
+ for(const p of pp){
+  const epDivisor=p.expert?EP:1,fsdpDivisor=p.expert?W/EP:W;
+  const afterEP=p.total/epDivisor,localParams=afterEP/fsdpDivisor;
+  p.sharding={epDivisor,fsdpDivisor,fsdpName:p.expert?'ep_fsdp_size':'fsdp_size',afterEP,localParams,
+   paramBytes:2*localParams,gradBytes:c.gradShardBytes*localParams,optBytes:optBytesPerParam*localParams,
+   gatheredParamBytesPerOccurrence:2*p.n/epDivisor};
+ }
  const groupNames=['MLA','KDA','MoE','Dense','Norm','Embedding','LM head'];
  const groups=groupNames.map(name=>{const rows=pp.filter(x=>x.group===name);const params=sum(rows,'total');return {name,params,paramBytes:2*params/W,gradBytes:c.gradShardBytes*params/W,optBytes:optBytesPerParam*params/W,expertParams:sum(rows.filter(x=>x.expert),'total'),rows};});
  // Saved tensors follow the 2.8T sheet; FlashAttention scores and latent-up output are excluded there.
@@ -263,7 +292,21 @@ function timeline(r){const es=r.events,w=690,h=226,pad={l:43,r:14,t:18,b:35},plo
  for(const [phase,col]of areas){const points=es.map((e,i)=>({...e,i})).filter(e=>e.phase===phase);const line=points.map(e=>`${x(e.i)},${y(e.bytes/MM.GiB)}`).join(' ');if(points.length>1){svg+=`<polygon points="${x(points[0].i)},${y(0)} ${line} ${x(points.at(-1).i)},${y(0)}" fill="${col}" opacity=".08"/><polyline points="${line}" fill="none" stroke="${col}" stroke-width="2.2"/>`;}for(const e of points)svg+=`<circle cx="${x(e.i)}" cy="${y(e.bytes/MM.GiB)}" r="${points.length===1?4:2}" fill="${col}"><title>${esc(e.label)} · ${phase} · ${gi(e.bytes)} GiB</title></circle>`;}
  if(cfg.hbmGiB){const yy=y(cfg.hbmGiB);svg+=`<line x1="${pad.l}" y1="${yy}" x2="${w-pad.r}" y2="${yy}" stroke="#bc6557" stroke-dasharray="4 4"/><text x="${pad.l+5}" y="${yy-5}" font-size="14" fill="#bc6557">HBM ${cfg.hbmGiB} GiB</text>`;}
  svg+=`<text x="${pad.l}" y="${h-8}" font-size="14" fill="#83929e">前向计算</text><text x="${w*.58}" y="${h-8}" font-size="14" fill="#83929e">反向计算</text><text x="${w-pad.r}" y="${h-8}" text-anchor="end" font-size="14" fill="#627fcd">${r.optimizerSpec.name}</text></svg>`;return svg;}
+function parameterDetails(g,r){
+ const id='param-'+g.name.replaceAll(' ','');
+ const formulaRows=g.rows.map(p=>`<tr><td>${esc(p.name)}</td><td><code>${esc(p.formula)}</code></td><td>${p.count}</td><td>${fmt(p.total/1e6,6)}</td></tr>`).join('');
+ const shardRows=g.rows.map(p=>{const s=p.sharding;return `<tr><td>${esc(p.name)}<small>${p.expert?'路由专家':'非路由专家参数'}</small></td><td>${fmt(p.total/1e6,6)}</td><td>${p.expert?`÷ ep_size (${s.epDivisor})`:'不按 EP 切分'}</td><td>${fmt(s.afterEP/1e6,6)}</td><td>÷ ${s.fsdpName}<br>(${s.fsdpDivisor})</td><td>${fmt(s.localParams/1e6,6)}</td><td class="shard-bytes">权重 ${fmt(s.paramBytes/MM.GiB,6)}<br>梯度 ${fmt(s.gradBytes/MM.GiB,6)}<br>${r.optimizerSpec.name} ${fmt(s.optBytes/MM.GiB,6)}</td></tr>`;}).join('');
+ return `<tr id="${id}" class="parameter-expansion" hidden><td colspan="6"><div class="parameter-detail"><h3>${g.name} · 参数公式</h3><p class="small-note">单层 / 单次公式 × 层数 / 次数 = 全局参数；embedding、final norm、lm head 各计一次。路由专家公式包含全部 n_routed_experts。</p><div class="table-wrap"><table class="detail-table parameter-formulas"><colgroup><col style="width:23%"><col style="width:49%"><col style="width:10%"><col style="width:18%"></colgroup><thead><tr><th>参数</th><th>单层 / 单次公式</th><th>层数 / 次数</th><th>全局参数 / 百万</th></tr></thead><tbody>${formulaRows}</tbody></table></div><h3>${g.name} · 从全局到每卡</h3><p class="small-note">下面逐行展示两步切分；参数量覆盖该项所有层。末列为每 rank 的 shard 容量（GiB）。</p><div class="table-wrap"><table class="sharding-table"><thead><tr><th>参数</th><th>① 全局 / 百万</th><th>② EP 分配</th><th>EP 后 / 百万</th><th>③ FSDP 分片</th><th>每卡 / 百万</th><th>④ 每卡状态 / GiB</th></tr></thead><tbody>${shardRows}</tbody></table></div><p class="small-note">每卡状态 = 每卡参数量 × dtype 字节数。计算时仅对当前计算单位的 BF16 权重做 all-gather：非路由专家恢复该单位完整参数；路由专家在 EP-FSDP 组内恢复该 EP 位置负责的专家参数。优化器状态始终按 shard 更新；swap 是该 shard 在 HBM / DDR 之间搬运。</p></div></td></tr>`;
+}
+function renderSharding(r){
+ const localExperts=r.nMoE?r.m.experts/cfg.ep:0;
+ const paths=[{title:'非路由专家参数 · FSDP',total:r.P-r.Pexp,ep:1,fsdp:cfg.world,scope:'MLA、KDA、Dense、Norm、Embedding、LM head，以及 MoE 的 shared experts、router、latent down/up',step:'EP 不切分这类参数',fsdpName:'fsdp_size'},
+ {title:'路由专家参数 · EP → EP-FSDP',total:r.Pexp,ep:cfg.ep,fsdp:r.epFSDP,scope:`仅 routed experts；每个 MoE 层的 ${r.m.experts} 个专家 → 每个 EP 位置 ${localExperts} 个${r.nMoE?'':'（当前无 MoE 层）'}`,step:`按专家分配：÷ ep_size (${cfg.ep})`,fsdpName:'ep_fsdp_size'}];
+ $('#sharding-paths').innerHTML=paths.map(p=>`<article class="panel shard-path"><h3>${p.title}</h3><p>${p.scope}</p><ol><li><span>全局参数</span><strong>${fmt(p.total/1e9,6)} 十亿</strong></li><li><span>${p.step}</span><strong>${fmt(p.total/p.ep/1e9,6)} 十亿</strong></li><li><span>组内分片：÷ ${p.fsdpName} (${p.fsdp})</span><strong>${fmt(p.total/p.ep/p.fsdp/1e9,6)} 十亿 / rank</strong></li></ol><div class="small-note">权重 × 2 bytes · 梯度 × ${cfg.gradShardBytes} bytes · ${r.optimizerSpec.name} × ${r.optBytesPerParam} bytes</div></article>`).join('');
+ $('#sharding-note').textContent=`world_size = ${cfg.world}；非路由专家 fsdp_size = ${cfg.world}；路由专家 ep_size × ep_fsdp_size = ${cfg.ep} × ${r.epFSDP}。下表优化器列表示 shard 总容量，当前位于 ${cfg.optSwap?'DDR（swap 已开启；更新批次临时恢复至 HBM）':'HBM（swap 关闭）'}。分片数按均匀分配建模，忽略 bucket padding；参数可跨 bucket，下面是容量归属，不代表按整层分配给某一张卡。`;
+}
 function render(){
+ const openParams=[...document.querySelectorAll('.parameter-expansion:not([hidden])')].map(e=>e.id);
  const openIds=[...document.querySelectorAll('details[id][open]')].map(e=>e.id);result=MM.calculate(cfg);const r=result;
  $('#errors').hidden=!r.errors.length;$('#results').hidden=!!r.errors.length;
  if(r.errors.length){$('#errors').innerHTML='<strong>请先修正配置</strong><ul>'+r.errors.map(e=>`<li>${esc(e)}</li>`).join('')+'</ul>';return;}
@@ -285,7 +328,8 @@ function render(){
  $('#timeline').innerHTML=timeline(r);
  $('#peak-detail').innerHTML=`<div class="peak-label"><strong>${esc(r.peak.label)}</strong> · ${gi(r.peak.bytes)} GiB</div>`+Object.entries(r.peak.parts).filter(([k,v])=>v>0).map(([k,v])=>`<div class="part-row"><span>${parts[k][0]}</span><div class="part-track"><div class="part-fill" style="background:${parts[k][1]};width:${100*v/r.peak.bytes}%"></div></div><strong>${gi(v)}</strong></div>`).join('')+`<p class="small-note">前向 ${gi(r.forward.bytes)} / 反向 ${gi(r.backward.bytes)} / 更新 ${gi(r.optimizer.bytes)} GiB</p>`;
  $('#warnings').innerHTML=r.warnings.map(w=>`<div class="warning">${esc(w)}</div>`).join('');
- $('#param-body').innerHTML=r.groups.map(g=>`<tr><td><span class="group-tag" style="background:${colors[g.name]}"></span>${g.name}</td><td>${fmt(g.params/1e9,3)}</td><td>${gi(g.paramBytes)}</td><td>${gi(g.gradBytes)}</td><td>${gi(g.optBytes)}</td><td><button data-param="${esc(g.name)}" aria-label="展开 ${g.name} 参数公式">公式 ↗</button></td></tr><tr id="param-${g.name.replaceAll(' ','')}" hidden><td colspan="6"><div class="table-wrap"><table class="detail-table"><thead><tr><th>参数</th><th>单层公式</th><th>层数</th><th>全局参数 / M</th></tr></thead><tbody>${g.rows.map(p=>`<tr><td>${esc(p.name)}</td><td><code>${esc(p.formula)}</code>${p.expert?'<small>EP 分片</small>':''}</td><td>${p.count}</td><td>${fmt(p.total/1e6,3)}</td></tr>`).join('')}</tbody></table></div></td></tr>`).join('');
+ renderSharding(r);
+ $('#param-body').innerHTML=r.groups.map(g=>`<tr><td><span class="group-tag" style="background:${colors[g.name]}"></span>${g.name}<small class="module-shard-route">${g.name==='MoE'?'路由专家 EP → EP-FSDP；其余 FSDP':'FSDP ÷ '+cfg.world}</small></td><td>${fmt(g.params/1e9,3)}</td><td>${gi(g.paramBytes)}</td><td>${gi(g.gradBytes)}</td><td>${gi(g.optBytes)}</td><td><button data-param="${esc(g.name)}" aria-expanded="false" aria-controls="param-${g.name.replaceAll(' ','')}">公式与分片 ↗</button></td></tr>${parameterDetails(g,r)}`).join('');
  $('#param-total').innerHTML=`<tr><td>全模型汇总</td><td>${fmt(r.P/1e9,3)}</td><td>${gi(r.state.param)}</td><td>${gi(r.state.grad)}</td><td>${gi(r.optTotal)}</td><td></td></tr>`;
  $('#opt-summary').innerHTML=mini(`理论可卸载的 ${optName} 总状态`,`${gi(r.optTotal)} GiB / rank`)+mini('当前前向 / 反向常驻状态',`${gi(r.state.opt)} GiB`)+mini('更新时恢复的状态缓冲',`${gi(r.optimizer.parts.optStage)} GiB`);
  $('#act-summary').innerHTML=mini('全模型保存张量总量 / micro batch',`${gi(r.totalAct)} GiB`)+mini('计划卸载 / 保存张量比例',`${gi(r.offAct)} GiB · ${pct(r.offAct/r.totalAct)}`)+mini('前向结束保留在 HBM 的激活',`${gi(r.totalAct-r.offAct)} GiB`);
@@ -302,6 +346,7 @@ function render(){
  const fullF=r.flops.reduce((a,x)=>a+x.f,0),originalF=r.flops.reduce((a,x)=>a+x.original,0);
  $('#mfu-cards').innerHTML=card('每 step 前向 FLOPs',fmt(r.fwdFlops/1e15,2),'PFLOP',`global_batch_size ${r.gbs} · ${cfg.flopMode==='corrected'?'修正口径':'原表漏项口径'}`)+card('每 step 训练 FLOPs',fmt(r.trainingFlops/1e15,2),'PFLOP',`前向 × ${cfg.trainFactor}；KDA core ${cfg.kdaCoreFLOPs?'已手工补充':'未补充'}`)+card('实测 MFU',r.measuredMFU===null?'待填':fmt(r.measuredMFU*100,2),r.measuredMFU===null?'':'%',r.measuredMFU===null?'填写实测 step 秒数后计算':'含 step 内通信、swap 与等待')+card('所设 MFU 下的计算时间',fmt(r.computeSeconds,2),'s',`目标 ${cfg.targetMFU}% · 原/修正前向 ${fmt(originalF/1e15,1)} / ${fmt(fullF/1e15,1)} PFLOP`);
  $('#flop-details').innerHTML=['MLA','KDA','MoE','Dense','LM head'].map(g=>{const rows=r.flops.filter(x=>x.group===g);return `<details id="flop-${g.replaceAll(' ','')}"><summary>${g} FLOPs<span>${fmt(rows.reduce((a,x)=>a+x[cfg.flopMode==='corrected'?'f':'original'],0)/1e15,3)} PFLOP / forward</span></summary><div class="table-wrap"><table class="detail-table"><thead><tr><th>计算项</th><th>计算公式</th><th>原表 PFLOP</th><th>修正 PFLOP</th></tr></thead><tbody>${rows.map(f=>`<tr><td>${esc(f.name)}</td><td><code>${esc(f.formula)}</code>${f.note?`<small>${esc(f.note)}</small>`:''}</td><td>${fmt(f.original/1e15,4)}</td><td>${fmt(f.f/1e15,4)}</td></tr>`).join('')}</tbody></table></div></details>`;}).join('');
+ for(const id of openParams){const e=document.getElementById(id);if(e){e.hidden=false;document.querySelector(`[aria-controls="${id}"]`).setAttribute('aria-expanded','true');}}
  for(const id of openIds){const e=document.getElementById(id);if(e)e.open=true;}
 }
 document.addEventListener('change',e=>{
@@ -316,7 +361,7 @@ document.addEventListener('click',e=>{
  const el=e.target.closest('button');if(!el)return;
  if(el.hasAttribute('data-allratio')){for(const row of result.ar)cfg.actRatios[row.id]=Number(el.dataset.allratio);render();}
  if(el.dataset.group){for(const row of result.ar.filter(r=>r.group===el.dataset.group))cfg.actRatios[row.id]=Number(el.dataset.ratio);render();}
- if(el.dataset.param){const row=document.getElementById('param-'+el.dataset.param.replaceAll(' ',''));row.hidden=!row.hidden;}
+ if(el.dataset.param){const row=document.getElementById('param-'+el.dataset.param.replaceAll(' ',''));row.hidden=!row.hidden;el.setAttribute('aria-expanded',String(!row.hidden));}
 });
 $('#suggest').addEventListener('click',()=>{const plan=MM.suggest(cfg);if(plan.error){$('#suggest-note').textContent=plan.error;return;}cfg=plan.config;sync();render();$('#suggest-note').textContent=`已开启激活 swap，并将所有项设为 ${fmt(plan.ratio,1)}%。${plan.fits?'在当前模型下满足 HBM / DDR 约束。':'即使用完当前 DDR / IO 预算仍不能满足 HBM，请增加资源或调整 batch / 序列 / wrapping。'} 峰值 ${gi(plan.peak)} GiB，DDR ${gi(plan.host)} GiB/Host。这是统一比例的起点；还需确认实际 tensor 分块粒度，再逐项调整。`;});
 $('#reset').addEventListener('click',()=>{cfg=MM.defaults(PRESETS[0]);sync();render();});
