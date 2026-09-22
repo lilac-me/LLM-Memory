@@ -1,0 +1,492 @@
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Atlas · 带宽与通信</title><style>:root{--bg:#f4f6f8;--white:#fff;--ink:#182b39;--muted:#586b79;--line:#dfe6ea;--teal:#087e83;--orange:#e59b49;--blue:#627fcd;--purple:#9e7eb8;--soft:#eaf5f3;--red:#b34739}*{box-sizing:border-box}html{scroll-behavior:smooth;scroll-padding-top:86px}body{margin:0;background:var(--bg);color:var(--ink);font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans CJK SC","Microsoft YaHei",sans-serif;font-size:16px;line-height:1.6}header{height:72px;display:flex;align-items:center;justify-content:space-between;padding:0 28px;background:#fff;border-bottom:1px solid var(--line);position:sticky;top:0;z-index:5}.brand{display:flex;align-items:center;gap:12px;font-weight:750;letter-spacing:2px}.brand-mark{display:grid;place-items:center;width:36px;height:36px;color:white;background:var(--teal);border-radius:10px;font-size:23px}.brand small{display:block;font-size:14px;letter-spacing:1.4px;color:var(--muted);line-height:1.1}.header-right{display:flex;align-items:center;gap:18px;font-size:14px;color:var(--muted)}button,select,input{font:inherit}button{border:1px solid var(--line);border-radius:7px;background:#fff;color:var(--ink);padding:7px 12px;cursor:pointer}button:hover{border-color:var(--teal);color:var(--teal)}button:focus-visible,a:focus-visible,summary:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid #72c3bc;outline-offset:2px}#export{background:var(--teal);color:white;border-color:var(--teal)}.quiet{background:transparent;border-color:transparent}.layout{display:grid;grid-template-columns:330px minmax(0,1fr);max-width:1920px;margin:0 auto}aside{background:#fff;border-right:1px solid var(--line);padding:24px 22px;min-width:0;align-self:start;height:calc(100vh - 72px);position:sticky;top:72px;overflow:auto}.side-title{font-weight:700;font-size:16px;display:flex;justify-content:space-between;margin-bottom:24px}.side-title span{font-size:14px;color:var(--teal);background:var(--soft);padding:3px 8px;border-radius:4px;letter-spacing:1px}label{display:block;font-size:14px;color:#566977;margin-bottom:12px}input[type=number],input[type=text],input:not([type]),select{width:100%;min-width:0;background:#fbfcfd;color:var(--ink);border:1px solid var(--line);padding:8px 9px;border-radius:6px;margin-top:4px;line-height:1.4}input[type=checkbox]{accent-color:var(--teal);width:15px;height:15px;flex-shrink:0}input[type=number]{font-variant-numeric:tabular-nums}input[type=range]{width:100%;accent-color:var(--teal)}.field-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 10px}h3{font-size:18px;margin:0 0 14px}aside h3{margin-top:24px;padding-top:18px;border-top:1px solid var(--line)}.check{display:flex;align-items:center;gap:7px;font-size:14px;margin-bottom:10px}.small-note{font-size:14px;line-height:1.7;color:var(--muted);margin:9px 0}.side-foot{margin-top:24px;font-size:14px;letter-spacing:.3px;color:var(--muted);border-top:1px solid var(--line);padding-top:18px}main{min-width:0;padding:34px 36px 12px}.intro{display:flex;align-items:center;justify-content:space-between;gap:24px;margin-bottom:24px}.eyebrow{font-size:14px;letter-spacing:2px;color:var(--teal);font-weight:700}h1{font-size:29px;letter-spacing:-1px;line-height:1.5;margin:9px 0}.intro p{color:var(--muted);font-size:14px;margin:0}.intro strong{color:var(--ink)}.intro-model{text-align:right;min-width:150px}.intro-model>span{font-size:38px;font-weight:650;letter-spacing:-1.7px;display:block}.intro-model small{font-size:14px;color:var(--muted)}nav{display:flex;gap:28px;border-bottom:1px solid var(--line);margin:0 0 27px;padding:0 0 12px;overflow:auto;white-space:nowrap}nav a{text-decoration:none;color:var(--muted);font-size:14px}nav a:first-child{color:var(--teal);font-weight:700}nav a:hover{color:var(--teal)}section{margin-bottom:30px}.section-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px}h2{font-size:20px;margin:0;letter-spacing:-.3px}.muted{color:var(--muted);font-size:14px}.badge{font-size:14px;font-weight:600;border-radius:5px;background:var(--soft);color:var(--teal);padding:4px 8px}.badge.warn{color:#9e6724;background:#fff2de}.cards{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:13px;margin-bottom:18px}.card{background:white;border:1px solid var(--line);border-radius:10px;padding:18px}.card.primary{background:var(--teal);color:white;border-color:var(--teal)}.card-label{font-size:14px;color:var(--muted);margin-bottom:8px}.primary .card-label{color:#b6e1df}.card-value{font-size:28px;font-weight:650;letter-spacing:-.8px;line-height:1.4;font-variant-numeric:tabular-nums}.card-value small{font-size:14px;font-weight:450;letter-spacing:0;margin-left:5px}.card-note{font-size:14px;color:var(--muted);margin-top:7px}.primary .card-note{color:#b6e1df}.two-col{display:grid;grid-template-columns:1.18fr 1fr;gap:16px;margin-bottom:16px}.panel{background:white;border:1px solid var(--line);border-radius:10px;padding:20px}.panel h3 small{float:right;font-size:14px;color:var(--muted);font-weight:400}.panel p{font-size:14px;color:var(--muted)}.panel .small-note{font-size:14px}.legend{display:flex;justify-content:center;gap:22px;font-size:14px;color:var(--muted)}.legend i{width:9px;height:9px;display:inline-block;border-radius:3px;margin-right:5px}.peak-label{padding-bottom:12px;margin-bottom:14px;border-bottom:1px solid var(--line);font-size:14px;color:var(--muted)}.peak-label strong{color:var(--ink);font-size:16px}.part-row{display:flex;align-items:center;font-size:14px;gap:8px;margin:7px 0}.part-row>span{width:148px;flex-shrink:0;color:var(--muted)}.part-track{min-width:20px;height:7px;border-radius:4px;background:#f0f3f5;flex:1;overflow:hidden}.part-fill{height:100%;border-radius:4px}.part-row strong{font-weight:600;min-width:76px;text-align:right;font-variant-numeric:tabular-nums}.warning{background:#fff7e9;color:#87602a;padding:9px 13px;font-size:14px;border-radius:6px;margin-top:7px;border-left:3px solid #e4b16b}#errors{color:var(--red);background:#fff0ed;padding:20px;border-radius:8px;margin-bottom:20px}table{border-collapse:collapse;width:100%;font-size:16px}th{text-align:right;color:var(--ink);font-size:16px;font-weight:650;padding:12px 10px;border-bottom:1px solid var(--line);white-space:nowrap}td{padding:12px 10px;text-align:right;border-bottom:1px solid #edf0f2;font-variant-numeric:tabular-nums}th:first-child,td:first-child{text-align:left}tfoot{font-weight:650;background:#f5faf9}tfoot td{border-bottom:0}.table-wrap{padding:0;overflow:auto}.group-tag{display:inline-block;width:7px;height:7px;border-radius:2px;background:var(--teal);margin-right:8px}.formula-strip{border:1px dashed #cbdcde;border-radius:7px;background:#edf5f5;padding:12px 16px;color:#466c6e;font-size:14px;margin:12px 0;font-family:ui-monospace,SFMono-Regular,Consolas,monospace;line-height:1.9}.row-between{display:flex;align-items:center;justify-content:space-between;gap:12px}.row-between h3{margin:0}.switch{display:flex;align-items:center;gap:6px;margin:0;font-size:14px;color:var(--teal)}.mini-stat{display:flex;justify-content:space-between;padding:8px 0;font-size:14px;border-bottom:1px solid #edf1f3}.mini-stat:last-child{border-bottom:0}.mini-stat span{color:var(--muted)}.mini-stat strong{font-weight:600}.io-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:20px}.io-item small{display:block;color:var(--muted);font-size:14px}.io-item strong{font-size:21px;font-weight:600}.io-item em{font-size:14px;font-style:normal;color:var(--muted)}.budget{margin-top:18px}.budget .row-between{font-size:14px;margin-bottom:6px}.budget-track{height:7px;background:#edf1f3;border-radius:5px;overflow:hidden}.budget-track>div{height:100%;background:var(--teal)}.toolbar{display:flex;gap:9px;align-items:center;background:#fff;padding:11px 15px;border:1px solid var(--line);border-radius:8px;margin-bottom:12px;font-size:14px;flex-wrap:wrap}.toolbar button{font-size:14px;padding:3px 12px}.section-note{font-size:14px;color:var(--muted);margin:10px 0 15px}details{border:1px solid var(--line);border-radius:8px;background:#fff;margin-bottom:10px}summary{padding:13px 15px;cursor:pointer;font-size:14px;font-weight:550;list-style:none;display:flex;align-items:center;gap:9px}summary:before{content:'›';font-size:19px;line-height:1;color:var(--muted);transition:transform .15s}details[open]>summary:before{transform:rotate(90deg)}summary>span:last-child{margin-left:auto;text-align:right;font-size:14px;color:var(--muted);font-weight:400}details>div,details>p,details>pre{margin:0 15px 15px}aside details{margin-top:14px}aside summary{padding:10px;font-size:14px}aside details>.field-grid{margin:0 10px 8px}aside details>label{margin:0 10px 12px}.detail-table td{font-size:16px;padding:12px}.detail-table td:nth-child(2){text-align:left;min-width:160px}.detail-table code{font-size:16px;color:#537277;background:#f2f7f7;padding:3px 5px;border-radius:3px;white-space:normal;display:inline-block}.detail-table small{display:block;color:var(--muted);font-size:14px}.ratio-input{width:66px!important;padding:5px!important;margin:0!important}.ratio-head{display:flex;align-items:center;gap:8px;padding-top:6px;color:var(--muted);font-size:14px}.ratio-head button{font-size:14px;padding:3px 8px}.inline{display:flex;align-items:center;gap:9px;margin:0;white-space:nowrap}.inline select{font-size:14px;margin:0;width:auto}.prose{font-size:14px;line-height:1.9}.prose h3{margin:8px 0 8px}.prose ul{padding-left:20px;color:#576b7a;margin:0 0 22px}.prose li{margin:7px 0}.prose details{margin-top:12px}.prose p{margin-top:10px}pre{white-space:pre-wrap;overflow-wrap:anywhere;background:#f3f6f8;border-radius:6px;padding:12px;font-size:14px;line-height:1.8}footer{font-size:14px;letter-spacing:1px;color:var(--muted);display:flex;justify-content:space-between;padding:15px 0 5px;border-top:1px solid var(--line)}svg{display:block;width:100%;height:auto}svg text{font-family:inherit}.mobile-hint{display:none}@media(min-width:1600px){main{padding-left:48px;padding-right:48px}.card-value{font-size:34px}}@media(max-width:1200px){.layout{grid-template-columns:300px minmax(0,1fr)}aside{padding:20px 16px}main{padding:26px 22px}.cards{grid-template-columns:repeat(2,minmax(0,1fr))}.two-col{grid-template-columns:1fr}.header-right>span:not(.badge){display:none}.section-head{flex-wrap:wrap}.intro-model{min-width:100px}.io-grid{gap:10px}.card-value{font-size:26px}}@media(max-width:760px){header{height:64px;padding:0 14px}.header-right{gap:4px}.header-right>.badge{display:none}.brand small{font-size:14px}.brand{font-size:16px}.brand-mark{width:30px;height:30px}.header-right button{font-size:14px;padding:6px}.layout{display:block}aside{position:static;height:auto;border-right:0;border-bottom:1px solid var(--line);padding:18px;display:grid;grid-template-columns:1fr 1fr;column-gap:18px}aside>.field-grid,aside>details,aside>h3,aside>.side-title,aside>.side-foot,aside>.small-note{grid-column:1/-1}aside h3{margin-top:12px}main{padding:22px 16px}h1{font-size:23px}.intro-model>span{font-size:26px}.intro-model{min-width:80px}.intro p{font-size:14px}.intro{gap:10px}.cards{gap:10px}.card{padding:14px}.card-value{font-size:23px}.io-grid{grid-template-columns:1fr 1fr;row-gap:16px}nav{gap:22px}.section-head>.muted{display:none}.toolbar .muted{width:100%}.panel{padding:16px}.table-wrap{padding:0}.inline{flex-wrap:wrap}.intro .eyebrow{font-size:14px;letter-spacing:1px}footer{font-size:14px}footer span{display:none}}
+
+@media(max-width:760px){header{height:auto;min-height:72px;flex-wrap:wrap;gap:10px;padding:12px 14px}.header-right{flex-wrap:wrap}.part-row{flex-wrap:wrap}.part-row>span{width:140px}.section-head .inline{white-space:normal}.inline select{max-width:100%;white-space:normal}.intro{flex-wrap:wrap}.intro-model{text-align:left}summary{flex-wrap:wrap}summary>span:last-child{white-space:normal}.field-grid label{overflow-wrap:anywhere}}
+
+/* Keep config names readable alongside their formulas. */
+.config-name{display:block;font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:16px;font-weight:600;color:var(--ink);overflow-wrap:anywhere;line-height:1.5}
+.config-description{display:block;font-size:14px;color:var(--muted);margin:3px 0 6px}
+#model-fields{grid-template-columns:minmax(0,1fr)}
+.detail-table td:nth-child(2){min-width:320px;max-width:640px}
+.detail-table code{line-height:1.9;overflow-wrap:anywhere;padding:6px 8px}
+#config-glossary td:nth-child(2){min-width:220px}
+.formula-strip{overflow-wrap:anywhere}
+
+/* Formula headers and cells use the same alignment and padding. */
+.detail-table th,.detail-table td{padding:12px;vertical-align:top}
+.detail-table th:nth-child(2){text-align:left}
+.parameter-expansion>td{text-align:left;padding:20px;background:#f8fbfc}
+.parameter-detail{min-width:0}
+.parameter-detail h3{margin:8px 0 10px}
+.parameter-detail>.table-wrap{max-width:100%;margin-bottom:24px;background:white}
+.parameter-formulas{table-layout:fixed;min-width:850px}
+.parameter-formulas th,.parameter-formulas td{overflow-wrap:anywhere;white-space:normal}
+.parameter-formulas td:nth-child(2){min-width:0;max-width:none}
+.parameter-formulas code{display:block}
+.sharding-table{min-width:1150px}
+.sharding-table th,.sharding-table td{padding:12px;vertical-align:top}
+.sharding-table th:nth-child(3),.sharding-table td:nth-child(3),.sharding-table th:nth-child(5),.sharding-table td:nth-child(5),.sharding-table th:last-child,.sharding-table td:last-child{text-align:left}
+.sharding-table small,.module-shard-route{display:block;color:var(--muted);font-size:14px;font-weight:400;max-width:230px;white-space:normal}
+.shard-bytes{white-space:nowrap}
+.shard-path ol{list-style:none;margin:16px 0;padding:0}
+.shard-path li{display:flex;flex-wrap:wrap;gap:8px;justify-content:space-between;padding:12px 0;border-top:1px solid var(--line)}
+.shard-path li span{overflow-wrap:anywhere}
+.shard-path li strong{font-variant-numeric:tabular-nums}
+
+.ratio-head{flex-wrap:wrap}
+
+/* Sparse attention structure, responsive and independent of Excel layout. */
+#sparse-diagram{display:grid;grid-template-columns:1fr 1fr;gap:20px}.sparse-card{background:white;border:1px solid var(--line,#d9e3e5);border-radius:14px;padding:20px}.sparse-card h3{font-size:22px}.sparse-card h3 span{display:block;font-size:15px;font-weight:400;margin-top:5px}.sparse-node{position:relative;background:#f1f6f7;border:1px solid #d9e5e8;border-radius:9px;padding:12px;margin:20px 0;font-size:16px;line-height:1.6}.sparse-node small{display:block;color:#526779;font-size:14px}.sparse-node:not(:first-child)::before{content:"↓";position:absolute;top:-23px;left:48%;color:#69868c}.sparse-node.accent{background:#e3f2ef;border-color:#8bb7b1}.sparse-branches{display:grid;grid-template-columns:1fr 1fr;gap:10px}.sparse-branches .sparse-node{margin:8px 0}#sparse-controls{padding:8px 0}[hidden]{display:none!important}@media(max-width:950px){#sparse-diagram{grid-template-columns:1fr}}
+
+.page-link{display:inline-block;text-decoration:none;color:var(--muted);font-size:15px;padding:6px 10px;border-radius:6px}.page-link.active{background:var(--soft);color:var(--teal);font-weight:650}.comm-metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin:12px 0}.comm-metrics .card{padding:12px}.comm-metrics .card-value{font-size:22px}#comm-errors{background:#fff0ed;color:var(--red);padding:20px;border-radius:8px}#comm-rows details>div{margin:0 15px 15px}#comm-rows summary{font-size:16px}@media(max-width:1000px){.comm-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}.header-right .page-link{font-size:14px;padding:5px}}
+</style></head><body>
+<header><div class="brand"><span class="brand-mark">A</span><span>ATLAS <small>BANDWIDTH & COMMUNICATION</small></span></div><div class="header-right"><a class="page-link" href="index.html">显存建模</a><a class="page-link active" href="communication.html" aria-current="page">带宽与通信</a><button id="comm-export">导出通信账本 ↓</button></div></header>
+<div class="layout"><aside><div class="side-title">通信配置 <span>LIVE</span></div><p id="sync-status" class="small-note">模型与 H2D/D2H 配置和显存页联动。</p>
+<label>模型预设<select id="comm-preset"></select></label><div id="model-summary" class="small-note"></div><a href="index.html">编辑模型结构与激活卸载比例 →</a>
+<h3>共享训练配置</h3><div class="field-grid">
+<label>world_size<input type="number" data-shared="world" min="1"></label><label>ep_size<input type="number" data-shared="ep" min="1"></label>
+<label>seq_length<input type="number" data-shared="seq" min="1"></label><label>micro_batch_size<input type="number" data-shared="mbs" min="1"></label>
+<label>global_batch_size<input type="number" data-shared="globalBatchSize" min="1"></label><label>Reduce dtype<select data-shared="gradBytes" data-number><option value="2">BF16 · 2 bytes</option><option value="4">FP32 · 4 bytes</option></select></label>
+</div><label>FSDP 包裹单位<select data-shared="unit"><option value="layer">整层</option><option value="module">Attention / FFN 分开</option></select></label>
+<h3>集合通信带宽</h3><label>输入带宽的分子口径<select data-comm="basis"><option value="logical">逻辑张量 N / 时间</option><option value="wire">等价发送量 / 时间</option></select></label>
+<div class="field-grid"><label>AllToAll / GB/s<input type="number" data-comm="a2aBW" min="0" step="1"></label><label>AllGather / GB/s<input type="number" data-comm="agBW" min="0" step="1"></label><label>ReduceScatter / GB/s<input type="number" data-comm="rsBW" min="0" step="1"></label><label>AllReduce / GB/s<input type="number" data-comm="arBW" min="0" step="1"></label><label>每调用启动延迟 / μs<input type="number" data-comm="latencyUs" min="0" step="1"></label><label>AllToAll dtype<select data-comm="a2aBytes" data-number><option value="2">BF16 · 2 bytes</option><option value="4">FP32 · 4 bytes</option></select></label></div>
+<p class="small-note">默认 100 GB/s、10 μs 是可替换的示例假设，不是设备实测。带宽为单 rank、对应 group 的有效值；填 0 表示未提供。若用包含启动延迟的端到端实测速率，延迟应填 0，避免重复计量。</p>
+<label>梯度 ReduceScatter 频率<select data-comm="reducePolicy"><option value="micro">每 micro batch 一次</option><option value="step">累积后每 step 一次（需额外梯度内存）</option></select></label>
+<details><summary>重计算通信</summary><label>额外 MoE 前向重放<select data-comm="replayA2A"><option value="auto">自动 · 完全重计算增加一轮</option><option value="0">0 轮 · 不重复 dispatch</option><option value="1">1 轮 · 增加 dispatch + combine</option></select></label><label>额外参数 AllGather<select data-comm="replayAG"><option value="auto">自动 · 整段重放增加一轮</option><option value="0">0 轮 · 复用反向 gather</option><option value="1">1 轮 · 额外 gather</option></select></label><p class="small-note">复用取决于 FSDP/checkpoint 包裹顺序；请按实际 trace 调整。</p></details>
+<details><summary>自定义 AllReduce</summary><p class="small-note">用于统计量、norm 等已知调用；默认不添加。</p><div class="field-grid"><label>Tensor 元素数<input type="number" data-comm="arElements" min="1"></label><label>每 step 次数<input type="number" data-comm="arCalls" min="0"></label><label>元素 bytes<select data-comm="arBytes" data-number><option value="2">2</option><option value="4">4</option><option value="8">8</option></select></label><label>通信组<select data-comm="arGroup"><option value="world">world_size</option><option value="ep">ep_size</option><option value="epfsdp">ep_fsdp_size</option></select></label></div></details>
+<h3>联动 H2D / D2H</h3><div class="field-grid"><label>H2D / rank / GB/s<input data-shared="h2d" type="number" min="0.01" step="0.1"></label><label>D2H / rank / GB/s<input data-shared="d2h" type="number" min="0.01" step="0.1"></label><label>Ranks / Host<input data-shared="ranksPerHost" type="number" min="1"></label></div>
+<label>H2D/D2H 方向调度<select data-shared="ioMode"><option value="serial">串行</option><option value="duplex">双向理想重叠</option></select></label><label class="check"><input data-shared="optSwap" type="checkbox">优化器 Swap</label><label class="check"><input data-shared="actSwap" type="checkbox">激活 Offload（使用显存页比例）</label>
+<label>纯计算窗口 / 秒（可选）<input data-comm="computeWindow" type="number" min="0" step="0.1"></label><p class="small-note">用于组合时间预算；填 0 时只比较通信与搬运。请填不含通信的计算耗时，不能直接用整体 MFU 反推的 step 时间。</p><div class="side-foot">FSDP × EP · 每 rank 账本<br>GB/s = 10⁹ bytes/s · GiB = 2³⁰ bytes</div></aside>
+<main><section class="intro"><div><div class="eyebrow">PAYLOAD / BANDWIDTH / SERVICE TIME</div><h1>从张量大小，算到通信耗时。</h1><p>把单次、每层与整步的流量分开，比较设备通信和 CPU 搬运的服务时间。</p></div></section>
+<nav><a href="#comm-overview">通信总览</a><a href="#comm-ledger">逐项账本</a><a href="#comm-io">H2D / D2H 联动</a><a href="#comm-sensitivity">带宽敏感度</a><a href="#comm-method">计算口径</a></nav>
+<div id="comm-errors" hidden role="alert"></div><div id="comm-results">
+<section id="comm-overview"><div class="section-head"><h2>每 rank · 每 step</h2><span id="comm-batch" class="badge"></span></div><div id="comm-cards" class="cards"></div><div class="two-col"><article class="panel"><h3>一层 MoE 的数据流</h3><div id="moe-flow"></div></article><article class="panel"><h3>通信与搬运服务时间</h3><div id="comm-bars"></div><p class="small-note">条形图是各资源服务时间之和，不是已测时间线。并发流、等待和计算交叠需要 trace 验证。</p></article></div><div id="comm-warnings"></div></section>
+<section id="comm-ledger"><div class="section-head"><h2>通信量与耗时账本</h2><span class="muted">展开查看每个计算单位的大小与公式</span></div><p class="section-note">AllToAll 的逻辑 N 是本 rank 展开后的发送 tensor；AllGather 是完整输出；ReduceScatter 是完整输入；AllReduce 是输入 tensor。发送量不重复加接收量。</p><div id="comm-rows"></div></section>
+<section id="comm-io"><div class="section-head"><h2>CPU 搬运与设备通信联动</h2><span class="muted">沿用显存页实际选中的卸载张量</span></div><div class="panel table-wrap"><table><thead><tr><th>搬运项</th><th>GiB / rank / step</th><th>GB/s / rank</th><th>服务时间 / s</th></tr></thead><tbody id="comm-io-rows"></tbody></table></div><p id="comm-host" class="small-note"></p><div id="comm-combined" class="cards"></div><p class="small-note">串行情形把各项时间相加；理想重叠情形允许集合通信、激活 IO、可选计算窗口完全交叠，优化器 IO 另加。两者都是调度假设，不是实测 step 的上下界；尚未计优化器计算、同步等待、共享链路竞争与协议开销。</p></section>
+<section id="comm-sensitivity"><div class="section-head"><h2>带宽变化，时间如何变化</h2><span class="muted">固定张量大小与调用次数</span></div><div class="panel table-wrap"><table><thead><tr><th>带宽倍率</th><th>仅设备带宽改变：集合通信 / s</th><th>仅 H2D/D2H 改变：搬运 / s</th><th>两者一起改变：串行 / s</th></tr></thead><tbody id="comm-sweep"></tbody></table></div><p class="small-note">启动延迟保持不变；传输带宽翻倍不意味着小消息延迟减半。</p></section>
+<section id="comm-method"><h2>计算口径</h2><div class="panel prose"><ul><li>AllToAll 单次 N = seq_length × micro_batch_size × num_experts_per_tok × hidden_size × dtype bytes。Latent MoE 在 latent down 后路由时，用 latent_h 替换 hidden_size；MoE 不均衡系数用于热点容量预算。</li><li>均衡 AllToAll 每 rank 远端发送量 = N × (EP−1)/EP。标准 ring 等价 AllGather / ReduceScatter 发送量 = N × (group−1)/group，AllReduce 再乘 2。group=1 不产生设备间通信。这里没有把接收量再加到分母。</li><li>时间 = 所选口径 bytes / (GB/s × 10⁹) + 调用次数 × 启动延迟。前向/反向参数均按 BF16，梯度采用共享的 reduce dtype。一次完整 MoE 前反向是 4 次 AllToAll，完整重放另加 2 次。</li><li>非路由参数 group=world_size；路由专家先除 ep_size，再在 ep_fsdp_size=world_size/ep_size 的组内 gather / reduce。默认每个 micro batch 前向后释放完整权重，反向重新 gather。预取改变时序，不增加总字节。</li><li>一项同 dtype、同通信组的计算单位视作一次调用；实际 bucket、参数 padding、多 dtype 及分组算法会改变调用数。AG/RS 同类带宽目前共用一个输入，需按真实组拓扑校准。</li><li>本页覆盖 FSDP × EP 的 AllToAll、AllGather、ReduceScatter 和可选 AllReduce；未启用的 TP/PP/CP 不自动添加通信。路由索引/权重元数据、跨节点拓扑和融合/去重发送需结合实现追加。</li></ul><p>定义参考：<a href="https://github.com/NVIDIA/nccl-tests/blob/master/doc/PERFORMANCE.md" target="_blank" rel="noopener">NCCL tests 带宽口径</a> · <a href="https://docs.pytorch.org/docs/main/distributed.fsdp.fully_shard.html" target="_blank" rel="noopener">FSDP 参数 gather 与梯度规约</a>。公式用于比较口径，不代表 Ascend HCCL 采用相同算法。</p></div></section>
+</div><footer>ATLAS / BANDWIDTH & COMMUNICATION <span>模型推导 · 带宽可填 · 配置联动</span></footer></main></div>
+<script>const WORKBOOK={"source":"Atlas model presets","sheets":[{"name":"2.8T","cells":{"D4":{"value":"93.0"},"D5":{"value":"1.0"},"D6":{"value":"92.0"},"D7":{"value":"896.0"},"D8":{"value":"2.0"},"D9":{"value":"7168.0"},"D10":{"value":"33792.0"},"D11":{"value":"3072.0"},"D12":{"value":"1536.0"},"D13":{"value":"512.0"},"D14":{"value":"96.0"},"D15":{"value":"128.0"},"D16":{"value":"64.0"},"D18":{"value":"128.0"},"D19":{"value":"163840.0"},"D20":{"value":"16.0"},"D21":{"value":"3584.0"},"D22":{"value":"128.0"},"D23":{"value":"4.0"},"D24":{"value":"69.0"},"D25":{"value":"24.0"}}},{"name":"10T-深度-v2","cells":{"D4":{"value":"137.0"},"D5":{"value":"1.0"},"D6":{"value":"136.0"},"D7":{"value":"2048.0"},"D8":{"value":"2.0"},"D9":{"value":"7168.0"},"D10":{"value":"33792.0"},"D11":{"value":"3072.0"},"D12":{"value":"1536.0"},"D13":{"value":"512.0"},"D14":{"value":"96.0"},"D15":{"value":"128.0"},"D16":{"value":"64.0"},"D18":{"value":"128.0"},"D19":{"value":"163840.0"},"D20":{"value":"16.0"},"D21":{"value":"3584.0"},"D22":{"value":"128.0"},"D23":{"value":"4.0"},"D24":{"value":"102.0"},"D25":{"value":"34.0"}}},{"name":"10T-宽度-v2","cells":{"D4":{"value":"93.0"},"D5":{"value":"1.0"},"D6":{"value":"92.0"},"D7":{"value":"2048.0"},"D8":{"value":"2.0"},"D9":{"value":"7168.0"},"D10":{"value":"33792.0"},"D11":{"value":"4096.0"},"D12":{"value":"1536.0"},"D13":{"value":"512.0"},"D14":{"value":"96.0"},"D15":{"value":"128.0"},"D16":{"value":"64.0"},"D18":{"value":"128.0"},"D19":{"value":"163840.0"},"D20":{"value":"16.0"},"D21":{"value":"5120.0"},"D22":{"value":"128.0"},"D23":{"value":"4.0"},"D24":{"value":"69.0"},"D25":{"value":"24.0"}}},{"name":"20T","cells":{"D4":{"value":"113.0"},"D5":{"value":"1.0"},"D6":{"value":"112.0"},"D7":{"value":"3072.0"},"D8":{"value":"2.0"},"D9":{"value":"7168.0"},"D10":{"value":"33792.0"},"D11":{"value":"4096.0"},"D12":{"value":"1536.0"},"D13":{"value":"512.0"},"D14":{"value":"96.0"},"D15":{"value":"128.0"},"D16":{"value":"64.0"},"D18":{"value":"128.0"},"D19":{"value":"163840.0"},"D20":{"value":"32.0"},"D21":{"value":"5120.0"},"D22":{"value":"128.0"},"D23":{"value":"4.0"},"D24":{"value":"84.0"},"D25":{"value":"29.0"}}},{"name":"10T-深度","cells":{"D4":{"value":"137.0"},"D5":{"value":"1.0"},"D6":{"value":"136.0"},"D7":{"value":"2048.0"},"D8":{"value":"2.0"},"D9":{"value":"7168.0"},"D10":{"value":"33792.0"},"D11":{"value":"3072.0"},"D12":{"value":"1536.0"},"D13":{"value":"512.0"},"D14":{"value":"96.0"},"D15":{"value":"128.0"},"D16":{"value":"64.0"},"D18":{"value":"128.0"},"D19":{"value":"163840.0"},"D20":{"value":"32.0"},"D21":{"value":"3584.0"},"D22":{"value":"128.0"},"D23":{"value":"4.0"},"D24":{"value":"102.0"},"D25":{"value":"34.0"}}},{"name":"10T-宽度","cells":{"D4":{"value":"93.0"},"D5":{"value":"1.0"},"D6":{"value":"92.0"},"D7":{"value":"2048.0"},"D8":{"value":"2.0"},"D9":{"value":"7168.0"},"D10":{"value":"33792.0"},"D11":{"value":"4096.0"},"D12":{"value":"1536.0"},"D13":{"value":"512.0"},"D14":{"value":"96.0"},"D15":{"value":"128.0"},"D16":{"value":"64.0"},"D18":{"value":"128.0"},"D19":{"value":"163840.0"},"D20":{"value":"16.0"},"D21":{"value":"5120.0"},"D22":{"value":"128.0"},"D23":{"value":"4.0"},"D24":{"value":"69.0"},"D25":{"value":"24.0"}}},{"name":"1T","cells":{"D4":{"value":"61.0"},"D5":{"value":"1.0"},"D6":{"value":"60.0"},"D7":{"value":"384.0"},"D8":{"value":"1.0"},"D9":{"value":"7168.0"},"D10":{"value":"18432.0"},"D11":{"value":"2048.0"},"D12":{"value":"1536.0"},"D13":{"value":"512.0"},"D14":{"value":"64.0"},"D15":{"value":"128.0"},"D16":{"value":"64.0"},"D18":{"value":"128.0"},"D19":{"value":"163840.0"},"D20":{"value":"8.0"},"D21":{"value":"7168.0"},"D22":{"value":"128.0"},"D23":{"value":"4.0"},"D24":{"value":"0.0"},"D25":{"value":"60.0"}}},{"name":"10T-v1（深度）","cells":{"D4":{"value":null},"D5":{"value":"1.0"},"D6":{"value":"136.0"},"D7":{"value":"2048.0"},"D8":{"value":"2.0"},"D9":{"value":"7168.0"},"D10":{"value":"33792.0"},"D11":{"value":"3072.0"},"D12":{"value":"1536.0"},"D13":{"value":"512.0"},"D14":{"value":"96.0"},"D15":{"value":"128.0"},"D16":{"value":"64.0"},"D18":{"value":"128.0"},"D19":{"value":"163840.0"},"D20":{"value":"32.0"},"D21":{"value":"3584.0"},"D22":{"value":"128.0"},"D23":{"value":"4.0"},"D24":{"value":"102.0"},"D25":{"value":"34.0"}}},{"name":"10T-v2（宽度）","cells":{"D4":{"value":null},"D5":{"value":"1.0"},"D6":{"value":"92.0"},"D7":{"value":"2048.0"},"D8":{"value":"2.0"},"D9":{"value":"7168.0"},"D10":{"value":"33792.0"},"D11":{"value":"4096.0"},"D12":{"value":"1536.0"},"D13":{"value":"512.0"},"D14":{"value":"96.0"},"D15":{"value":"128.0"},"D16":{"value":"64.0"},"D18":{"value":"128.0"},"D19":{"value":"163840.0"},"D20":{"value":"32.0"},"D21":{"value":"5120.0"},"D22":{"value":"128.0"},"D23":{"value":"4.0"},"D24":{"value":"102.0"},"D25":{"value":"34.0"}}}]};</script><script>/* CSA/HCA shapes from DeepSeek V4's official config and reference model.
+ * Activation rows are an explicit saved-tensor budget, not allocator measurements.
+ */
+(function(root){
+'use strict';
+const source='https://huggingface.co/deepseek-ai/DeepSeek-V4-Pro/blob/main/inference/model.py';
+const defaults={v4HeadDim:512,oGroups:16,oRank:1024,indexHeads:64,indexDim:128,indexTopk:1024,window:128,csaRatio:4,hcaRatio:128};
+const fields={v4HeadDim:['head_dim','V4 注意力头维度'],oGroups:['o_groups','输出投影分组数'],oRank:['o_lora_rank','每组输出低秩维度'],indexHeads:['index_n_heads','Indexer 头数'],indexDim:['index_head_dim','Indexer 头维度'],indexTopk:['index_topk','最多选取的压缩位置'],window:['sliding_window','局部窗口长度'],csaRatio:['csa_compress_ratio','CSA 压缩比例（4）'],hcaRatio:['hca_compress_ratio','HCA 压缩比例'],csa:['num_csa_layers','CSA 层数'],hca:['num_hca_layers','HCA 层数']};
+function enabled(c){return ['v4','csa','hca'].includes(c.arch);}
+function dimensions(c){const m={...defaults,csa:Math.floor(c.model.layers/2),hca:c.model.layers-Math.floor(c.model.layers/2),...c.model};if(enabled(c)){m.mla=0;m.kda=0;if(c.arch==='csa'){m.csa=m.layers;m.hca=0;}if(c.arch==='hca'){m.hca=m.layers;m.csa=0;}}return m;}
+function preset(base){return {name:'DeepSeek V4 Pro · CSA/HCA',arch:'v4',moeMode:'standard',source:'官方 config：CSA/HCA 主干',model:{...base,...defaults,layers:61,denseLayers:0,experts:384,shared:1,h:7168,moeH:3072,qRank:1536,heads:128,rope:64,vocab:129280,topK:6,csa:30,hca:31,mla:0,kda:0},layerMismatch:false};}
+function spec(m,type){const csa=type==='CSA',ratio=csa?m.csaRatio:m.hcaRatio;return {count:csa?m.csa:m.hca,ratio,co:ratio===4?2:1,d:m.v4HeadDim,h:m.h,n:m.heads,csa};}
+function parameters(m,type){const x=spec(m,type),{h,d,n,co,ratio,csa}=x,rs=[];
+ const add=(name,numel,formula,linear=false)=>rs.push({name,n:numel,formula,linear});
+ add('q_a',h*m.qRank,'hidden_size × q_lora_rank',true);add('q_norm',m.qRank,'q_lora_rank');
+ add('q_b',m.qRank*n*d,'q_lora_rank × num_attention_heads × head_dim',true);
+ add('wkv',h*d,'hidden_size × head_dim',true);add('kv_norm',d,'head_dim');add('attention sink',n,'num_attention_heads');
+ add('wo_a 分组投影',n*d*m.oRank,'num_attention_heads × head_dim × o_lora_rank',true);
+ add('wo_b',m.oGroups*m.oRank*h,'o_groups × o_lora_rank × hidden_size',true);
+ const compressor=(prefix,dim)=>{const dimName=prefix==='Indexer compressor'?'index_head_dim':'head_dim';add(prefix+' wkv + wgate',2*h*co*dim,`2 × hidden_size × ${co} × ${dimName}`,true);add(prefix+' APE',ratio*co*dim,`${csa?'csa_compress_ratio':'hca_compress_ratio'} × ${co} × ${dimName}`);add(prefix+' norm',dim,dimName);};
+ compressor('KV compressor',d);
+ if(csa){add('indexer q_b',m.qRank*m.indexHeads*m.indexDim,'q_lora_rank × index_n_heads × index_head_dim',true);add('indexer weights_proj',h*m.indexHeads,'hidden_size × index_n_heads',true);compressor('Indexer compressor',m.indexDim);}
+ return rs;
+}
+function activations(c,m,type){const {h,d,n,co,ratio,csa}=spec(m,type),s=c.seq,b=c.mbs,t=s*b,compressed=Math.floor(s/ratio),selected=csa?Math.min(m.indexTopk,compressed):compressed,rs=[];
+ const add=(id,name,elements,formula,bytes=2,dtype=bytes===4?'FP32':'BF16',note='保存张量预算；融合、原地更新与反向保存策略需按训练实现校准。')=>rs.push({id:type.toLowerCase()+'_'+id,name,elements,formula,bytes,dtype,note});
+ add('q_a','Q 低秩投影输出',t*m.qRank,'seq_length × micro_batch_size × q_lora_rank');add('q_norm','Q norm 输出',t*m.qRank,'seq_length × micro_batch_size × q_lora_rank');
+ add('q','Q / RoPE 后',t*n*d,'seq_length × micro_batch_size × num_attention_heads × head_dim');
+ add('kv','局部 KV',t*d,'seq_length × micro_batch_size × head_dim');
+ add('comp_input','KV compressor FP32 输入',t*h,'seq_length × micro_batch_size × hidden_size',4);
+ for(const [id,name] of [['kv_proj','KV 投影'],['gate_proj','gate 投影'],['pool_weights','pooling weights']])add('comp_'+id,'KV compressor '+name,t*co*d,`seq_length × micro_batch_size × ${co} × head_dim`,4);
+ add('compressed_kv','压缩 KV',b*compressed*d,`micro_batch_size × floor(seq_length / ${csa?'csa_compress_ratio':'hca_compress_ratio'}) × head_dim`);
+ add('attn_indices','稀疏 attention 合并索引',t*(Math.min(s,m.window)+selected),`seq_length × micro_batch_size × (min(seq_length, sliding_window) + ${csa?'min(index_topk, floor(seq_length / csa_compress_ratio))':'floor(seq_length / hca_compress_ratio)'})`,4,'INT32','滑动窗口与压缩位置拼接后的固定槽位索引，含 causal mask 的无效槽位。');
+ add('out','稀疏 attention 输出',t*n*d,'seq_length × micro_batch_size × num_attention_heads × head_dim');
+ add('lse','Flash attention LSE',t*n,'seq_length × micro_batch_size × num_attention_heads',4);
+ add('wo_a','分组 O 低秩输出',t*m.oGroups*m.oRank,'seq_length × micro_batch_size × o_groups × o_lora_rank');add('wo_b','O 投影输出',t*h,'seq_length × micro_batch_size × hidden_size');
+ if(csa){
+  add('index_q','Indexer Q',t*m.indexHeads*m.indexDim,'seq_length × micro_batch_size × index_n_heads × index_head_dim');
+  add('index_input','Indexer compressor FP32 输入',t*h,'seq_length × micro_batch_size × hidden_size',4);
+  for(const id of ['kv','gate','pool_weights'])add('index_'+id,'Indexer compressor '+id,t*co*m.indexDim,`seq_length × micro_batch_size × ${co} × index_head_dim`,4);
+  add('index_ckv','Indexer 压缩 KV',b*compressed*m.indexDim,'micro_batch_size × floor(seq_length / csa_compress_ratio) × index_head_dim');
+  add('index_weights','Indexer head weights',t*m.indexHeads,'seq_length × micro_batch_size × index_n_heads',4);
+  add('indices','选中位置索引',t*selected,'seq_length × micro_batch_size × min(index_topk, floor(seq_length / csa_compress_ratio))',4,'INT32');
+  const dense=c.indexScoreMode==='dense';add('scores',dense?'显式完整 Indexer scores':'选中位置 scores / 辅助 loss 预算',t*(dense?compressed:selected),`seq_length × micro_batch_size × ${dense?'floor(seq_length / csa_compress_ratio)':'min(index_topk, floor(seq_length / csa_compress_ratio))'}`,4,'FP32','融合 top-K 模式只预算选中位置的 scores；显式完整模式预算全部压缩位置。不是完整 attention 概率矩阵。');
+  if(dense)add('head_scores','Indexer 各 head scores / ReLU 工作集',t*m.indexHeads*compressed,'seq_length × micro_batch_size × index_n_heads × floor(seq_length / csa_compress_ratio)',4,'FP32','未融合的 score → ReLU → head 加权求和路径按 FP32 预算；若训练实现融合此步，应选择融合 top-K 模式。此项保守计入保存预算，实际生命周期和精度需校准。');
+ }
+ add('residual','Attention 残差输入',t*h,'seq_length × micro_batch_size × hidden_size');
+ return rs;
+}
+function sumFloor(s,r){const q=Math.floor(s/r),rem=s%r;return r*q*(q-1)/2+q*(rem+1);}
+function pairs(s,w,r,k=Infinity){const n=Math.min(s,w),local=n*(n+1)/2+(s-n)*w;let comp;if(Number.isFinite(k)){const limit=Math.min(s,k*r-1);comp=sumFloor(limit,r)+(s-limit)*k;}else comp=sumFloor(s,r);return local+comp;}
+function flops(c,m,type){const {count,ratio,csa,n,d}=spec(m,type),s=c.seq,b=c.globalBatchSize??c.world*c.mbs*(c.accum??1),t=s*b,rs=[];
+ for(const p of parameters(m,type).filter(x=>x.linear))rs.push({name:p.name,f:2*t*p.n*count,formula:`2 × seq_length × global_batch_size × (${p.formula}) × ${csa?'num_csa_layers':'num_hca_layers'}`});
+ const p=c.sparseFlopMode==='slots'?s*(Math.min(s,m.window)+(csa?Math.min(m.indexTopk,Math.floor(s/ratio)):Math.floor(s/ratio))):pairs(s,m.window,ratio,csa?m.indexTopk:Infinity);
+ rs.push({name:'稀疏 QK + AV',f:4*b*n*d*p*count,formula:`4 × global_batch_size × num_attention_heads × head_dim × attention_pairs × ${csa?'num_csa_layers':'num_hca_layers'}`,note:`attention_pairs = ${p.toLocaleString('en-US')} / sequence；${c.sparseFlopMode==='slots'?'固定槽位上界':'有效 causal 位置求和：Σ[min(t, sliding_window) + '+(csa?'min(index_topk, floor(t / csa_compress_ratio))':'floor(t / hca_compress_ratio)')+']，t=1…seq_length'}。`});
+ if(csa)rs.push({name:'Indexer QK score',f:2*b*m.indexHeads*m.indexDim*s*Math.floor(s/ratio)*count,formula:'2 × global_batch_size × index_n_heads × index_head_dim × seq_length × floor(seq_length / csa_compress_ratio) × num_csa_layers',note:'参考实现对全部压缩 KV 计算 indexer score 后再做 mask/top-K；不把主 attention 当作完整 S²。'});
+ return rs;
+}
+root.V4Attention={source,defaults,fields,enabled,dimensions,preset,parameters,activations,flops,pairs,sumFloor};
+if(typeof module!=='undefined')module.exports=root.V4Attention;
+})(typeof globalThis!=='undefined'?globalThis:this);
+
+/* Pure numerical engine. Bytes internally; no browser dependencies. */
+(function(root){
+'use strict';
+const VA=root.V4Attention||(typeof require!=='undefined'?require('./v4_attention.js'):null);
+const GiB=2**30, GB=1e9;
+// State budgets requested for this model; gradients and BF16 model weights are separate.
+const optimizers={adam:{name:'Adam',bytes:12,states:'FP32 master weight + momentum + velocity'},muon:{name:'Muon',bytes:8,states:'FP32 master weight + momentum'}};
+const fields={layers:'D4',denseLayers:'D5',experts:'D7',shared:'D8',h:'D9',denseH:'D10',moeH:'D11',qRank:'D12',kvRank:'D13',heads:'D14',nope:'D15',rope:'D16',vDim:'D18',vocab:'D19',topK:'D20',latent:'D21',headDim:'D22',conv:'D23',kda:'D24',mla:'D25'};
+const configFields={"layers":{"name":"num_hidden_layers","label":"总层数","note":""},"denseLayers":{"name":"first_k_dense_replace","label":"开头 Dense 层数","note":"按当前“Dense 层在前”的模型排布"},"experts":{"name":"n_routed_experts","label":"路由专家数","note":""},"shared":{"name":"n_shared_experts","label":"共享专家数","note":""},"h":{"name":"hidden_size","label":"模型隐藏维度","note":""},"denseH":{"name":"intermediate_size","label":"Dense FFN 中间维度","note":""},"moeH":{"name":"moe_intermediate_size","label":"MoE FFN 中间维度","note":"原表 moe_h"},"qRank":{"name":"q_lora_rank","label":"Q 低秩维度","note":""},"kvRank":{"name":"kv_lora_rank","label":"MLA KV 低秩维度","note":""},"heads":{"name":"num_attention_heads","label":"注意力头数","note":"原表 num_heads；当前注意力结构的头数"},"nope":{"name":"qk_nope_head_dim","label":"MLA 每头 Q/K 非 RoPE 维度","note":""},"rope":{"name":"qk_rope_head_dim","label":"每头 Q/K RoPE 维度","note":""},"vDim":{"name":"v_head_dim","label":"MLA 每头 V 维度","note":""},"vocab":{"name":"vocab_size","label":"词表大小","note":""},"topK":{"name":"num_experts_per_tok","label":"每 token 激活的专家数","note":"原表 top_k"},"latent":{"name":"latent_h","label":"Latent MoE 压缩后的隐藏维度","note":"沿用原表字段；标准 MoE 使用 hidden_size"},"headDim":{"name":"head_dim","label":"KDA 每头维度","note":"沿用原表字段"},"conv":{"name":"conv_size","label":"KDA 卷积核长度","note":"沿用原表字段"},"kda":{"name":"num_kda_layers","label":"KDA 层数","note":"本页结构计数字段，对应原表 KDA 层数"},"mla":{"name":"num_mla_layers","label":"MLA 层数","note":"本页结构计数字段，对应原表 MLA 层数"}};
+function configFormula(formula,mode){
+ const names={H:'hidden_size',V:'vocab_size',L:'num_hidden_layers',Rq:'q_lora_rank',Rkv:'kv_lora_rank',Nh:'num_attention_heads',Dn:'qk_nope_head_dim',Dr:'qk_rope_head_dim',Dv:'v_head_dim',Dk:'head_dim',C:'conv_size',A:mode==='latent'?'latent_h':'hidden_size',Fdense:'intermediate_size',Fmoe:'moe_intermediate_size',E:'n_routed_experts',Eshared:'n_shared_experts',K:'num_experts_per_tok',S:'seq_length',B:'micro_batch_size',T:'seq_length × micro_batch_size',Tg:'seq_length × global_batch_size',GBS:'global_batch_size',Lmla:'num_mla_layers',Lkda:'num_kda_layers',Lmoe:'num_moe_layers',Ldense:mode==='dense'?'num_hidden_layers':'first_k_dense_replace','η':'moe_token_imbalance_factor'};
+ return formula.replace(/\b(?:Eshared|Fdense|Fmoe|Lmla|Lkda|Lmoe|Ldense|Rkv|Rq|Nh|Dn|Dr|Dv|Dk|Tg|GBS|H|V|L|C|A|E|K|S|B|T)\b|η/g,key=>names[key]);
+}
+for(const [key,[name,label]] of Object.entries(VA.fields))configFields[key]={name,label,note:'CSA/HCA 结构参数；层数和两类压缩比例由本页映射到 compress_ratios。'};
+function presets(raw){const list=raw.sheets.filter(s=>s.name!=='Sheet2').map(s=>{const d={};for(const [k,c]of Object.entries(fields))d[k]=Number(s.cells[c]?.value)||0;if(!d.layers)d.layers=d.denseLayers+Number(s.cells.D6?.value||0);return {name:s.name,model:d,originalMLA:d.mla,originalKDA:d.kda,layerMismatch:d.mla+d.kda!==d.layers,source:s.name};});return [...list,VA.preset(list[0].model)];}
+function normalizedModel(p){const m={...VA.defaults,csa:Math.floor(p.model.layers/2),hca:p.model.layers-Math.floor(p.model.layers/2),...p.model};if(p.arch==='v4')return m;if(m.kda>m.layers)m.kda=Math.round(m.layers*m.kda/(m.kda+m.mla));m.mla=m.layers-m.kda;return m;}
+function defaults(p){const m=normalizedModel(p);return {preset:p.name,model:m,arch:p.arch||'hybrid',moeMode:p.moeMode||'latent',sparseFlopMode:'valid',indexScoreMode:'topk',world:512,ep:32,seq:8192,mbs:1,globalBatchSize:512,gradBytes:4,gradShardBytes:4,optimizerType:'adam',actSwap:false,actRecompute:false,recomputeMode:'selective',recomputeRatios:{},optSwap:true,actRatios:{},optBatchGiB:3,optBuffers:1,paramPrefetch:true,backParamPrefetch:true,gradPrefetch:true,actPrefetch:true,d2hQueue:0,unit:'layer',hbmGiB:0,ddrGiB:0,ranksPerHost:8,reserveGiB:2,h2d:36.95532366,d2h:64.632684,IOLimit:0,ioMode:'serial',targetMFU:45,peakTF:432,stepSeconds:0,trainFactor:3,kdaCoreFLOPs:0,flopMode:'corrected',imbalance:1};}
+function dimensions(c){const m=VA.dimensions(c);if(c.arch==='mla'){m.mla=m.layers;m.kda=0;}if(c.arch==='kda'){m.kda=m.layers;m.mla=0;}return m;}
+function calculate(c){
+ const optimizerType=c.optimizerType??'adam',optimizerSpec=optimizers[optimizerType];
+ const m=dimensions(c),v4=VA.enabled(c), W=Number(c.world),EP=Number(c.ep), s=c.seq,b=c.mbs,t=s*b,h=m.h,L=m.layers;
+ const gbs=c.globalBatchSize??(W*b*(c.accum??1)),microBatchesPerRank=gbs/(W*b);
+ const accumulationSteps=Number.isInteger(microBatchesPerRank)&&microBatchesPerRank>=1?microBatchesPerRank:null;
+ const errors=[], warnings=[];
+ if(!Number.isInteger(gbs)||gbs<1)errors.push('global_batch_size 必须是正整数');
+ const recomputeMode=c.actRecompute?(c.recomputeMode||'selective'):'off',fullRecompute=['full_layer','full_stack'].includes(recomputeMode);
+ if(!['off','selective','full_layer','full_stack'].includes(recomputeMode))errors.push('未知的重计算模式');
+ if(!Object.hasOwn(optimizers,optimizerType))errors.push('优化器类型必须为 Adam 或 Muon');
+ for(const k of ['world','ep','seq','mbs','ranksPerHost'])if(!Number.isInteger(c[k])||c[k]<1)errors.push(`${k} 必须是正整数`);
+ for(const [k,v]of Object.entries(m))if(!Number.isFinite(v)||v<0||!Number.isInteger(v))errors.push(`模型字段 ${configFields[k]?.name||k} 必须是非负整数`);
+ for(const k of ['layers','h','denseH','moeH','qRank','kvRank','heads','nope','rope','vDim','vocab','latent','headDim','conv','experts','topK'])if(m[k]<1)errors.push(`模型字段 ${configFields[k]?.name||k} 必须大于零`);
+ if(W%EP)errors.push('world_size 必须能被 ep_size 整除');
+ if(m.experts%EP && c.moeMode!=='dense')errors.push('专家数必须能被 ep_size 整除（本版使用均匀 EP）');
+ if(v4){
+  if(m.csa+m.hca!==L)errors.push('CSA 层数 + HCA 层数必须等于总层数');
+  for(const k of Object.keys(VA.defaults))if(!Number.isInteger(m[k])||m[k]<1)errors.push(`${VA.fields[k][0]} 必须为正整数`);
+  if(m.heads%m.oGroups)errors.push('num_attention_heads 必须能被 o_groups 整除');
+  if(m.rope>m.v4HeadDim||m.rope>m.indexDim)errors.push('qk_rope_head_dim 不能超过 head_dim / index_head_dim');
+  if(m.csaRatio!==4)errors.push('CSA 当前按 compress_ratio=4 的 overlap compressor 建模');
+  if(m.hcaRatio<=4)errors.push('HCA 压缩比例须大于 4');
+  if(c.sparseFlopMode&&!['valid','slots'].includes(c.sparseFlopMode))errors.push('未知的稀疏注意力 FLOPs 口径');
+  if(c.indexScoreMode&&!['topk','dense'].includes(c.indexScoreMode))errors.push('未知的 Indexer scores 保存方式');
+ }else if(m.mla+m.kda!==L)errors.push('MLA 层数 + KDA 层数必须等于总层数');
+ if(m.denseLayers>L)errors.push('Dense 层数不能超过总层数');
+ if(m.topK>m.experts)errors.push('top-K 不能超过专家数');
+ if(![2,4].includes(c.gradBytes)||![2,4].includes(c.gradShardBytes))errors.push('梯度 shard / reduce 格式必须为 BF16 或 FP32');
+ if(c.ranksPerHost>W)errors.push('每 Host 的卡数不能超过 world_size');
+ for(const k of ['h2d','d2h','peakTF','targetMFU','optBatchGiB','trainFactor'])if(!(c[k]>0))errors.push(`${k} 必须大于零`);
+ for(const k of ['reserveGiB','hbmGiB','ddrGiB','stepSeconds','kdaCoreFLOPs','IOLimit'])if(!Number.isFinite(c[k])||c[k]<0)errors.push(`${k} 不能小于零`);
+ if(c.targetMFU>100)errors.push('目标 MFU 不能超过 100%');
+ if(c.imbalance<1)errors.push('MoE token 不均衡系数必须 ≥ 1');
+ for(const v of Object.values(c.actRatios))if(!Number.isFinite(v)||v<0||v>100)errors.push('激活 offload 比例必须在 0–100%');
+ for(const v of Object.values(c.recomputeRatios||{}))if(!Number.isFinite(v)||v<0||v>100)errors.push('激活重计算比例必须在 0–100%');
+ for(const id of new Set([...Object.keys(c.actRatios),...Object.keys(c.recomputeRatios||{})])){
+  const off=c.actSwap?Number(c.actRatios[id]||0):0,rec=c.actRecompute?Number(c.recomputeRatios?.[id]||0):0;
+  if(!fullRecompute&&off+rec>100+1e-8)errors.push(`激活项 ${id} 的 offload + 重计算比例不能超过 100%`);
+ }
+ if(errors.length)return {errors,warnings};
+ const optBytesPerParam=optimizerSpec.bytes;
+ const nMoE=c.moeMode==='dense'?0:L-m.denseLayers, nDense=L-nMoE, latent=c.moeMode==='latent', a=latent?m.latent:h;
+ const pp=[]; const addP=(group,name,n,count,formula,ref,expert=false)=>pp.push({group,name,n,count,total:n*count,formula:configFormula(formula,c.moeMode),ref,expert});
+ addP('Embedding','word embedding',m.vocab*h,1,'V × H','I2');
+ addP('Norm','pre / post norm',2*h,L,'2 × H','I3:I4');
+ [ ['q_a',h*m.qRank,'H × Rq','I6'],['q_norm',m.qRank,'Rq','I7'],['kv_a',h*(m.kvRank+m.rope),'H × (Rkv + Dr)','I8'],['kv_norm',m.kvRank,'Rkv','I9'],['q_b',m.qRank*m.heads*(m.nope+m.rope),'Rq × Nh × (Dn + Dr)','I10'],['kv_b',m.kvRank*m.heads*(m.nope+m.vDim),'Rkv × Nh × (Dn + Dv)','I11'],['o_proj',m.heads*m.vDim*h,'Nh × Dv × H','I12'],['gated_proj',h*m.heads*m.vDim,'H × Nh × Dv','I71'] ].forEach(x=>addP('MLA',x[0],x[1],m.mla,x[2],x[3]));
+ addP('Dense','gate / up / down',3*h*m.denseH,nDense,'3 × H × Fdense','I15:I18');
+ addP('MoE','routed experts',3*a*m.moeH*m.experts,nMoE,'3 × A × Fmoe × E','I20:I23 × E',true);
+ addP('MoE','shared experts',3*h*m.moeH*m.shared,nMoE,'3 × H × Fmoe × Eshared','I25');
+ addP('MoE','router',h*m.experts,nMoE,'H × E','I27');
+ addP('MoE','latent down / up',latent?2*h*a:0,nMoE,latent?'2 × H × A':'0','I30:I31');
+ [ ['q / k / v',3*h*m.heads*m.headDim,'3 × H × Nh × Dk','I37:I39'],['q / k / v conv',3*m.heads*m.headDim*m.conv,'3 × Nh × Dk × C','I40:I42'],['A_log',m.heads,'Nh','I43'],['f_a',h*m.headDim,'H × Dk','I44'],['f_b',m.headDim*m.heads*m.headDim,'Dk × Nh × Dk','I45'],['dt_bias',m.heads*m.headDim,'Nh × Dk','I46'],['b_proj',h*m.heads,'H × Nh','I47'],['g_proj',h*m.heads*m.headDim,'H × Nh × Dk','I48'],['o_norm',m.headDim,'Dk','I49'],['o_proj',m.heads*m.headDim*h,'Nh × Dk × H','I50'] ].forEach(x=>addP('KDA',x[0],x[1],m.kda,x[2],x[3]));
+ addP('Norm','final norm',h,1,'H','I34');addP('LM head','lm head（不绑 embedding）',h*m.vocab,1,'H × V','I35');
+ if(v4)for(const type of ['CSA','HCA'])for(const p of VA.parameters(m,type))addP(type,p.name,p.n,type==='CSA'?m.csa:m.hca,p.formula,VA.source);
+ const sum=(arr,key)=>arr.reduce((x,v)=>x+(key?v[key]:v),0),P=sum(pp,'total'),Pexp=sum(pp.filter(x=>x.expert),'total');
+ // Expose both distribution steps; shared experts/router/latent projections use ordinary FSDP.
+ for(const p of pp){
+  const epDivisor=p.expert?EP:1,fsdpDivisor=p.expert?W/EP:W;
+  const afterEP=p.total/epDivisor,localParams=afterEP/fsdpDivisor;
+  p.sharding={epDivisor,fsdpDivisor,fsdpName:p.expert?'ep_fsdp_size':'fsdp_size',afterEP,localParams,
+   paramBytes:2*localParams,gradBytes:c.gradShardBytes*localParams,optBytes:optBytesPerParam*localParams,
+   gatheredParamBytesPerOccurrence:2*p.n/epDivisor};
+ }
+ const groupNames=[...(v4?['CSA','HCA']:['MLA','KDA']),'MoE','Dense','Norm','Embedding','LM head'];
+ const groups=groupNames.map(name=>{const rows=pp.filter(x=>x.group===name);const params=sum(rows,'total');return {name,params,paramBytes:2*params/W,gradBytes:c.gradShardBytes*params/W,optBytes:optBytesPerParam*params/W,expertParams:sum(rows.filter(x=>x.expert),'total'),rows};});
+ // Saved tensors follow the 2.8T sheet; FlashAttention scores and latent-up output are excluded there.
+ const ar=[]; const addA=(id,group,name,elements,count,formula,ref,bytes=2,note='')=>{const per=elements*bytes,ratio=c.actSwap&&!fullRecompute?(Number(c.actRatios[id]||0)/100):0,recomputeRatio=fullRecompute?(id==='embed'?0:1):c.actRecompute?Number(c.recomputeRatios?.[id]||0)/100:0;ar.push({recomputeRatio,recompute:per*recomputeRatio,recomputeTotal:per*count*recomputeRatio,id,group,name,elements,count,bytes,per,total:per*count,off:per*ratio,offTotal:per*count*ratio,ratio,formula:configFormula(formula,c.moeMode),ref,note});};
+ const ac=(id,group,name,e,count,f,ref,bytes=2,note='')=>addA(id,group,name,e,count,f,ref,bytes,note);
+ ac('embed','Embedding','embedding / pre-norm 输入',t*h,1,'S × B × H','N2');
+ ac('norm_pre','Norm','pre-norm 输出',t*h,L,'S × B × H','N3');ac('norm_post','Norm','post-norm 输出',t*h,L,'S × B × H','N4');
+ [ ['q_a',t*m.qRank,'T × Rq',6],['q_norm',t*m.qRank,'T × Rq',7],['kv_a',t*(m.kvRank+m.rope),'T × (Rkv + Dr)',8],['kv_norm',t*m.kvRank,'T × Rkv',9],['q_b',t*m.heads*(m.nope+m.rope),'T × Nh × (Dn + Dr)',10],['kv_b',t*m.heads*(m.nope+m.vDim),'T × Nh × (Dn + Dv)',11],['o_proj',t*h,'T × H',12],['attention output',t*m.heads*(m.vDim+m.rope),'T × Nh × (Dv + Dr)',14],['gated linear',t*m.heads*m.vDim,'T × Nh × Dv',71],['sigmoid',t*m.heads*m.vDim,'T × Nh × Dv',72],['q/k concat + v pad',t*m.heads*(m.nope+m.rope)*3,'3 × T × Nh × (Dn + Dr)',73],['residual',t*h,'T × H',74] ].forEach(x=>ac('mla'+x[3],'MLA',x[0],x[1],m.mla,x[2],'N'+x[3]));
+ [['gate',t*m.denseH,15],['up',t*m.denseH,16],['down',t*h,17],['activation',t*m.denseH,18]].forEach(x=>ac('dense'+x[2],'Dense',x[0],x[1],nDense,x[2]===17?'T × H':'T × Fdense','M'+x[2]));
+ const dispatch=c.imbalance, moeNote='路由 token 按均衡 EP 估算，不再除以 EP；不均衡系数仅作用于 dispatched token。';
+ ac('moe_gating','MoE','moe_gating logits（FP32）',t*m.experts,nMoE,'T × E','补充：router 输出',4,'[seq_length, micro_batch_size, hidden_size] × [hidden_size, n_routed_experts] → [seq_length, micro_batch_size, n_routed_experts]；计 FP32 输出，不除 EP，不乘 top-K；router 权重已在参数中计入。');
+ if(latent)ac('moe20','MoE','latent down',t*a,nMoE,'T × A','N20');
+ ac('moe21','MoE','permute',t*a*m.topK*dispatch,nMoE,'T × A × K × η','N21',2,moeNote);
+ ac('moe22','MoE','FC1 gate + up',t*m.topK*m.moeH*2*dispatch,nMoE,'2 × T × K × Fmoe × η','N22',2,moeNote);
+ ac('moe23','MoE','activation',t*m.topK*m.moeH*dispatch,nMoE,'T × K × Fmoe × η','N23',2,moeNote);
+ ac('moe24','MoE','FC2',t*m.topK*a*dispatch,nMoE,'T × K × A × η','N24',2,moeNote);
+ ac('moe25','MoE','unpermute',t*a,nMoE,'T × A','N25');
+ ac('moe28','MoE','shared gate + up',t*m.moeH*2*m.shared,nMoE,'2 × T × Fmoe × Eshared','N28');
+ ac('moe29','MoE','shared activation',t*m.moeH*m.shared,nMoE,'T × Fmoe × Eshared','N29');
+ [ ['q',t*m.heads*m.headDim,'T × Nh × Dk',37],['k',t*m.heads*m.headDim,'T × Nh × Dk',38],['v',t*m.heads*m.headDim,'T × Nh × Dk',39],['q conv',t*m.heads*m.headDim,'T × Nh × Dk',40],['k conv',t*m.heads*m.headDim,'T × Nh × Dk',41],['v conv',t*m.heads*m.headDim,'T × Nh × Dk',42],['f_a',t*m.headDim,'T × Dk',44],['f_b',t*m.heads*m.headDim,'T × Nh × Dk',45],['b_proj',t*m.heads,'T × Nh',47],['g_proj',t*m.heads*m.headDim,'T × Nh × Dk',48],['o_norm',t*m.heads*m.headDim,'T × Nh × Dk',49],['o_proj',t*h,'T × H',50],['qkv SiLU',3*t*m.heads*m.headDim,'3 × T × Nh × Dk',76],['qk L2 norm',2*t*m.heads*m.headDim,'2 × T × Nh × Dk',77],['b_proj SiLU',t*m.heads,'T × Nh',78],['gated sigmoid',t*m.heads*m.headDim,'T × Nh × Dk',79],['chunk output',t*m.heads*m.headDim,'T × Nh × Dk',80] ].forEach(x=>ac('kda'+x[3],'KDA',x[0],x[1],m.kda,x[2],'N'+x[3]));
+ ac('lmhead','LM head','FP32 logits',t*m.vocab,1,'T × V','M35',4);
+ if(v4)for(const type of ['CSA','HCA'])for(const a of VA.activations(c,m,type)){ac(a.id,type,a.name,a.elements,type==='CSA'?m.csa:m.hca,a.formula,VA.source,a.bytes,a.note);ar.at(-1).dtype=a.dtype;}
+ const totalAct=sum(ar,'total'),offAct=sum(ar,'offTotal'),recomputedAct=sum(ar,'recomputeTotal');
+ const actByGroup={};for(const name of groupNames){const rows=ar.filter(x=>x.group===name);actByGroup[name]={all:sum(rows,'per'),off:sum(rows,'off'),recompute:sum(rows,'recompute')};}
+ const paramPer=name=>sum(pp.filter(x=>x.group===name&&x.count>0),'n');
+ const units=[];const unit=(label,group,pFull,act,off,index,recompute=0)=>{
+  // Conservative independent BF16 hidden checkpoint for each recomputed FSDP unit.
+  const checkpoint=recompute>0?2*t*h:0;
+  return {label,group,pFull,act,off,recompute,checkpoint,keep:Math.max(0,act-off-recompute)+checkpoint,index};
+ };
+ units.push(unit('Embedding','Embedding',paramPer('Embedding'),actByGroup.Embedding.all,actByGroup.Embedding.off,0,actByGroup.Embedding.recompute));
+ let kdaCount=0;
+ for(let i=0;i<L;i++){
+  const isKDA=Math.floor((i+1)*m.kda/L)>Math.floor(i*m.kda/L);if(isKDA)kdaCount++;
+  const att=v4?(Math.floor((i+1)*m.csa/L)>Math.floor(i*m.csa/L)?'CSA':'HCA'):(isKDA?'KDA':'MLA'), ff=i<nDense?'Dense':'MoE';
+  const pa=paramPer(att)+2*h;
+  const pff=ff==='Dense'?paramPer('Dense'):pp.filter(x=>x.group==='MoE').reduce((v,x)=>v+x.n/(x.expert?EP:1),0);
+  const norm=actByGroup.Norm; // pre/post only; no saved final norm in source
+  const aa=actByGroup[att].all+norm.all,ao=actByGroup[att].off+norm.off,arc=actByGroup[att].recompute+norm.recompute;
+  if(c.unit==='module'){
+   units.push(unit(`L${i+1} ${att}`,att,pa,aa,ao,i+1,arc));units.push(unit(`L${i+1} ${ff}`,ff,pff,actByGroup[ff].all,actByGroup[ff].off,i+1,actByGroup[ff].recompute));
+  }else units.push(unit(`L${i+1} ${att} + ${ff}`,att,pa+pff,aa+actByGroup[ff].all,ao+actByGroup[ff].off,i+1,arc+actByGroup[ff].recompute));
+ }
+ units.push(unit('Final norm + LM head','LM head',h+paramPer('LM head'),actByGroup['LM head'].all,actByGroup['LM head'].off,L+1,actByGroup['LM head'].recompute));
+ if(fullRecompute){
+  const seen=new Set();
+  for(const u of units){
+   // The embedding output is the first BF16 hidden input; count it once.
+   u.checkpoint=recomputeMode==='full_layer'&&u.index>1&&!seen.has(u.index)?2*t*h:0;
+   seen.add(u.index);u.keep=u.index===0?u.act:u.checkpoint;
+  }
+ }
+ const checkpointAct=sum(units,'checkpoint')+(fullRecompute?units[0].act:0),retainedAct=sum(units,'keep');
+ const state={param:2*P/W,grad:c.gradShardBytes*P/W,opt:c.optSwap?0:optBytesPerParam*P/W,reserve:c.reserveGiB*GiB};
+ const base=sum(Object.values(state));const events=[];
+ const event=(phase,u,activation,params,grad,opt=0,workspace=0)=>{const parts={...state,activation,gather:params,reduce:grad,optStage:opt,workspace};const bytes=sum(Object.values(parts));const e={phase,label:u.label,bytes,parts};events.push(e);return e;};
+ let kept=0;
+ for(let i=0;i<units.length;i++){
+  const u=units[i],next=units[i+1];const queue=units.slice(Math.max(0,i-c.d2hQueue),i).reduce((v,x)=>v+x.off,0);
+  // Current layer's selected activations remain until its D2H completes.
+  event('forward',u,kept+u.act+u.checkpoint+queue,2*(u.pFull+(c.paramPrefetch&&next?next.pFull:0)),0);kept+=u.keep;
+ }
+ if(fullRecompute){
+  // Reentrant-style group replay: save this group's intermediates, then consume
+  // them in reverse. A single initial checkpoint does not imply a one-layer peak.
+  const replayGroups=[];
+  for(let i=1;i<units.length;i++){
+   if(!replayGroups.length||(recomputeMode==='full_layer'&&units[i].index!==units[i-1].index))replayGroups.push([]);
+   replayGroups.at(-1).push(i);
+  }
+  for(const ids of replayGroups.reverse()){
+   let rebuilt=0;
+   for(const i of ids){const u=units[i],next=units[i+1];rebuilt+=u.act;
+    event('recompute',u,kept+rebuilt,2*(u.pFull+(c.paramPrefetch&&next?next.pFull:0)),0);
+   }
+   for(const i of [...ids].reverse()){const u=units[i],prev=units[i-1];
+    event('backward',u,kept+rebuilt,2*(u.pFull+(c.backParamPrefetch&&prev?prev.pFull:0)),c.gradBytes*(u.pFull+(c.gradPrefetch&&prev?prev.pFull:0)));
+    rebuilt-=u.act;kept-=u.keep;
+   }
+  }
+  event('backward',units[0],kept,2*units[0].pFull,c.gradBytes*units[0].pFull);
+ }else{
+  for(let i=units.length-1;i>=0;i--){
+   const u=units[i],prev=units[i-1];
+   event('backward',u,kept+u.off+u.recompute+(c.actSwap&&c.actPrefetch&&prev?prev.off:0),2*(u.pFull+(c.backParamPrefetch&&prev?prev.pFull:0)),c.gradBytes*(u.pFull+(c.gradPrefetch&&prev?prev.pFull:0)));
+   kept-=u.keep;
+  }
+ }
+ const optTotal=optBytesPerParam*P/W,batchState=Math.min(c.optBatchGiB*GiB,optTotal),batchN=batchState/optBytesPerParam;
+ event('optimizer',{label:`${optimizerSpec.name} 分批更新`},0,0,0,c.optSwap?Math.min(optTotal,batchState*c.optBuffers):0,batchN*6);
+ const maxE=es=>es.reduce((a,x)=>x.bytes>a.bytes?x:a,{bytes:0});
+ const peak=maxE(events), forward=maxE(events.filter(e=>e.phase==='forward')),backward=maxE(events.filter(e=>e.phase==='backward'||e.phase==='recompute')),optimizer=events.at(-1);
+ const optHost=c.optSwap?optTotal:0,hostPerRank=optHost+offAct,hostPerHost=hostPerRank*c.ranksPerHost;
+ const traffic={activation:offAct*microBatchesPerRank,optimizer:optHost};traffic.h2d=traffic.d2h=traffic.activation+traffic.optimizer;
+ const h2dTime=traffic.h2d/(c.h2d*GB),d2hTime=traffic.d2h/(c.d2h*GB),serialTime=h2dTime+d2hTime;
+ const ioTime=c.ioMode==='duplex'?Math.max(h2dTime,d2hTime):serialTime;
+ // FLOPs: worksheet is global-batch forward FLOPs, not training FLOPs.
+ const T=s*gbs, flops=[];
+ const addF=(group,name,f,formula,ref,original=f,note='')=>flops.push({group,name,f,original,formula:configFormula(formula,c.moeMode),ref,note});
+ addF('MLA','q_a + kv_a + q_b + kv_b + o_proj',2*T*(h*m.qRank+h*(m.kvRank+m.rope)+m.qRank*m.heads*(m.nope+m.rope)+m.kvRank*m.heads*(m.nope+m.vDim)+m.heads*m.vDim*h)*m.mla,'2 × Tg × (H × Rq + H × (Rkv + Dr) + Rq × Nh × (Dn + Dr) + Rkv × Nh × (Dn + Dv) + Nh × Dv × H) × Lmla','S6,S8,S10:S12');
+ addF('MLA','QK + AV',2*gbs*m.heads*s*s*(m.nope+m.rope+m.vDim+m.rope)*m.mla,'2 × GBS × Nh × S² × (Dn + Dr + Dv + Dr) × Lmla','S13:S14');
+ addF('MLA','gated projection',2*T*h*m.heads*m.vDim*m.mla,'2 × Tg × H × Nh × Dv × Lmla','S71（未进入 S54）',0,'原表总计未包含此项');
+ addF('Dense','gate + up + down',6*T*h*m.denseH*nDense,'6 × Tg × H × Fdense × Ldense','S15:S17');
+ addF('MoE','latent down / up',latent?4*T*h*a*nMoE:0,latent?'4 × Tg × H × A × Lmoe':'0','S20,S26');
+ addF('MoE','routed gate + up + down',6*T*m.topK*a*m.moeH*nMoE,'6 × Tg × K × A × Fmoe × Lmoe','S22,S24',4*T*m.topK*a*m.moeH*nMoE,'原表 FC1 少计 gate / up 其中一路');
+ addF('MoE','shared gate + up + down',6*T*h*m.moeH*m.shared*nMoE,'6 × Tg × H × Fmoe × Eshared × Lmoe','S28',4*T*h*m.moeH*m.shared*nMoE,'原表只计 shared gate / up');
+ addF('MoE','router projection',2*T*h*m.experts*nMoE,'2 × Tg × H × E × Lmoe','原表无',0,'不含 top-K / dispatch 开销');
+ addF('KDA','linear projections',2*T*(3*h*m.heads*m.headDim+h*m.headDim+m.headDim*m.heads*m.headDim+h*m.heads+2*h*m.heads*m.headDim)*m.kda,'2 × Tg × (3 × H × Nh × Dk + H × Dk + Dk × Nh × Dk + H × Nh + 2 × H × Nh × Dk) × Lkda','S37:S50');
+ addF('KDA','depthwise conv',6*T*m.heads*m.headDim*m.conv*m.kda,'6 × Tg × Nh × Dk × C × Lkda','原表无',0);
+ addF('KDA','chunk / recurrent core（补充）',T*c.kdaCoreFLOPs*m.kda,'Tg × kda_core_flops_per_token × Lkda','用户输入',0,'0 表示未计；具体需对齐实现');
+ addF('LM head','vocabulary projection',2*T*h*m.vocab,'2 × Tg × H × V','S35',2*T*h*m.vDim,'原表 D18 应为 D19');
+ if(v4)for(const type of ['CSA','HCA'])for(const f of VA.flops(c,m,type))addF(type,f.name,f.f,f.formula,VA.source,f.f,f.note||'');
+ const fwdFlops=sum(flops,c.flopMode==='original'?'original':'f'),trainingFlops=fwdFlops*c.trainFactor;
+ const ideal=trainingFlops/(c.peakTF*1e12*W),computeSeconds=ideal/(c.targetMFU/100),measuredMFU=c.stepSeconds>0?ideal/c.stepSeconds: null;
+ // Activation IO overlaps forward/backward; optimizer IO is charged outside that window.
+ const activationH=traffic.activation/(c.h2d*GB),activationD=traffic.activation/(c.d2h*GB);
+ const activationIO=c.ioMode==='duplex'?Math.max(activationH,activationD):activationH+activationD;
+ const optimizerIO=c.ioMode==='duplex'?Math.max(optHost/(c.h2d*GB),optHost/(c.d2h*GB)):optHost/(c.h2d*GB)+optHost/(c.d2h*GB);
+ const minStep=Math.max(computeSeconds,activationIO)+optimizerIO, noOverlap=computeSeconds+ioTime;
+ const capacity={hbm:c.hbmGiB?peak.bytes<=c.hbmGiB*GiB:null,ddr:c.ddrGiB?hostPerHost<=c.ddrGiB*GiB:null};
+ if(c.hbmGiB&&!capacity.hbm)warnings.push(`峰值超出 HBM 容量 ${(peak.bytes/GiB-c.hbmGiB).toFixed(2)} GiB`);
+ if(c.ddrGiB&&!capacity.ddr)warnings.push(`每 Host 的 swap 占用超出可用 DDR ${(hostPerHost/GiB-c.ddrGiB).toFixed(2)} GiB`);
+ if(!c.hbmGiB||!c.ddrGiB)warnings.push('容量上限未填全；当前不作整机可运行的判断。');
+ if(c.kdaCoreFLOPs===0&&m.kda>0)warnings.push('KDA chunk / recurrent core FLOPs 尚未计入；MFU 仅对应已列出的计算项。');
+ if(v4)warnings.push('CSA/HCA 使用显式保存张量预算，融合/别名与 checkpoint scope 需按实现校准。当前结构未计 mHC、MTP 及训练辅助 loss；此页采用 FSDP×EP，不还原 profiling 中的 PP/VPP。');
+ if(activationIO>computeSeconds)warnings.push('激活搬运时间超过所设计算窗口；即使理想重叠也需要等待，有限缓冲会带来停顿。');
+ if(measuredMFU>1)warnings.push('MFU 超过 100%；请核对 step 时间、峰值算力、GBS 与 FLOPs 口径。');
+ if(recomputeMode==='full_stack')warnings.push('整段模式仅保留初始 BF16 hidden input；反向按整段重放后再反传估算，中间激活会重新积累。额外 FLOPs、通信和耗时尚未计入。');
+ if(recomputedAct>0)warnings.push('重计算已计入激活释放、边界输入保留和反向重建；额外 FLOPs / 耗时尚未估算，时间范围未包含这部分开销。');
+ if(accumulationSteps===null)warnings.push('global_batch_size 不是 world_size × micro_batch_size 的正整数倍，无法对应均匀的整步梯度累积。FLOPs 仍按填写值计算；激活 IO 按每卡平均工作量估算，HBM 按活动 rank 的完整 micro batch 估算。');
+ if(c.IOLimit&&ioTime>c.IOLimit)warnings.push('搬运服务时间超出你设置的每 step IO 预算。');
+ return {errors,warnings,recomputeMode,fullRecompute,optimizerType,optimizerSpec,optBytesPerParam,m,P,Pexp,groups,pp,ar,units,totalAct,offAct,recomputedAct,checkpointAct,retainedAct,state,base,peak,forward,backward,optimizer,events,optTotal,batchState,hostPerRank,hostPerHost,optHost,traffic,h2dTime,d2hTime,ioTime,activationIO,optimizerIO,capacity,gbs,microBatchesPerRank,accumulationSteps,flops,fwdFlops,trainingFlops,ideal,computeSeconds,measuredMFU,minStep,noOverlap,nMoE,nDense,epFSDP:W/EP,ioPerHostH:c.h2d*c.ranksPerHost,ioPerHostD:c.d2h*c.ranksPerHost};
+}
+function suggest(c){
+ const r=calculate(c);if(r.errors.length)return {error:'请先修正配置。'};
+ if(r.fullRecompute)return {error:'完全重计算已释放所有中间激活，初始 / 分层 checkpoint 保留在 HBM；逐项 offload 建议仅用于逐项重计算模式。'};
+ if(!(c.hbmGiB>0&&c.ddrGiB>0))return {error:'先填写单卡 HBM 和每 Host 可用 DDR，再生成受容量约束的建议。'};
+ let allowance=c.ddrGiB*GiB/c.ranksPerHost-r.optHost;
+ const servicePerByte=c.ioMode==='duplex'?Math.max(1/c.h2d,1/c.d2h)/GB:(1/c.h2d+1/c.d2h)/GB;
+ if(c.IOLimit>0)allowance=Math.min(allowance,(c.IOLimit/servicePerByte-r.optHost)/r.microBatchesPerRank);
+ if(allowance<0)return {error:'仅优化器 swap 已超出 DDR 或 IO 预算；请先调整容量、带宽、IO 预算或优化器策略。'};
+ const maxRatio=Math.floor(Math.min(1,allowance/(r.totalAct-r.recomputedAct||1))*1000)/10;
+ const candidate=ratio=>({...c,actSwap:true,actRatios:Object.fromEntries(r.ar.map(a=>[a.id,ratio*(1-a.recomputeRatio)]))});
+ let lo=0,hi=maxRatio;const zero=calculate(candidate(0)),upper=calculate(candidate(hi));
+ if(zero.peak.bytes<=c.hbmGiB*GiB)hi=0;
+ else if(upper.peak.bytes<=c.hbmGiB*GiB){for(let i=0;i<30;i++){const mid=(lo+hi)/2;if(calculate(candidate(mid)).peak.bytes<=c.hbmGiB*GiB)hi=mid;else lo=mid;}hi=Math.min(maxRatio,Math.ceil(hi*10)/10);}
+ const config=candidate(hi),out=calculate(config);
+ return {config,ratio:hi,maxRatio,fits:out.capacity.hbm&&out.capacity.ddr,peak:out.peak.bytes,host:out.hostPerHost};
+}
+root.MemoryModel={GiB,GB,optimizers,fields,configFields,presets,normalizedModel,defaults,calculate,suggest,VA};
+if(typeof module!=='undefined')module.exports=root.MemoryModel;
+})(typeof globalThis!=='undefined'?globalThis:this);
+</script><script>/* Same-origin configuration sync. Storage disabled => both pages still work independently. */
+(function(root){
+'use strict';
+const modelKey='atlas:model-config:v1',commKey='atlas:communication:v1';
+function read(key,fallback){try{const x=JSON.parse(root.localStorage.getItem(key));return x&&typeof x==='object'&&!Array.isArray(x)?x:fallback;}catch{return fallback;}}
+function write(key,value){try{const text=JSON.stringify(value);if(root.localStorage.getItem(key)!==text)root.localStorage.setItem(key,text);return true;}catch{return false;}}
+function config(fallback,model){const saved=read(modelKey,null);if(!saved)return fallback;try{const c={...fallback,...saved,model:{...fallback.model,...saved.model}};return model.calculate(c).errors.length?fallback:c;}catch{return fallback;}}
+root.AtlasState={modelKey,commKey,read,write,config};
+})(typeof globalThis!=='undefined'?globalThis:this);
+</script><script>/* Per-rank collective ledger. Ring-equivalent bytes are a model, not HCCL wire measurements. */
+(function(root){
+'use strict';
+const defaults={basis:'logical',a2aBW:100,agBW:100,rsBW:100,arBW:100,latencyUs:10,a2aBytes:2,reducePolicy:'micro',replayA2A:'auto',replayAG:'auto',arElements:1,arBytes:4,arCalls:0,arGroup:'world',computeWindow:0};
+const factor=(op,g)=>g<=1?0:(op==='AllReduce'?2:1)*(g-1)/g;
+function calculate(c,r,settings={}){
+ const q={...defaults,...settings},errors=[],warnings=[];
+ if(r.errors.length)return {errors:r.errors,warnings};
+ for(const k of ['a2aBW','agBW','rsBW','arBW','latencyUs','arCalls','computeWindow'])if(!Number.isFinite(q[k])||q[k]<0)errors.push(`${k} 必须是非负数`);
+ if(!Number.isInteger(q.arCalls))errors.push('AllReduce 每 step 次数必须是整数');
+ if(!Number.isInteger(q.arElements)||q.arElements<1)errors.push('AllReduce 元素数必须是正整数');
+ for(const k of ['a2aBytes','arBytes'])if(![2,4,8].includes(q[k]))errors.push(`${k} 必须为 2 / 4 / 8 bytes`);
+ if(!['logical','wire'].includes(q.basis))errors.push('未知的带宽口径');
+ if(!['micro','step'].includes(q.reducePolicy))errors.push('未知的梯度同步频率');
+ for(const k of ['replayA2A','replayAG'])if(!['auto','0','1'].includes(String(q[k])))errors.push('重放次数必须为自动 / 0 / 1');
+ if(!['world','ep','epfsdp'].includes(q.arGroup))errors.push('未知的 AllReduce group');
+ if(errors.length)return {errors,warnings};
+ const m=r.m,mb=r.microBatchesPerRank,ep=c.ep,ef=c.world/ep,rows=[];
+ const replayA2A=q.replayA2A==='auto'?(r.fullRecompute?1:0):Number(q.replayA2A);
+ const replayAG=q.replayAG==='auto'?(r.recomputeMode==='full_stack'?1:0):Number(q.replayAG);
+ function row(id,op,name,group,groupName,instances,passes,bwKey,formula,note){
+  const active=group>1&&passes>0,logical=instances.reduce((n,x)=>n+x.bytes,0)*passes;
+  const calls=active?instances.filter(x=>x.bytes>0).length*passes:0;
+  const wire=active?logical*factor(op,group):0,basisBytes=active?(q.basis==='wire'?wire:logical):0;
+  const time=calls===0?0:q[bwKey]>0?basisBytes/(q[bwKey]*1e9)+calls*q.latencyUs/1e6:null;
+  rows.push({id,op,name,group,groupName,instances,passes,calls,logicalBytes:logical,sendBytes:wire,receiveBytes:wire,basisBytes,time,bw:q[bwKey],bwKey,formula,note});
+ }
+ const width=c.moeMode==='latent'?m.latent:m.h,widthName=c.moeMode==='latent'?'latent_h':'hidden_size';
+ const tokenBytes=c.seq*c.mbs*m.topK*width*q.a2aBytes*c.imbalance;
+ const moeInstances=Array.from({length:r.nMoE},(_,i)=>({name:`L${r.nDense+i+1} MoE`,bytes:tokenBytes}));
+ const a2aFormula=`seq_length × micro_batch_size × num_experts_per_tok × ${widthName} × ${q.a2aBytes} bytes × moe_token_imbalance_factor`;
+ for(const [id,name]of [['fwd_dispatch','前向 · token dispatch'],['fwd_combine','前向 · expert combine'],['bwd_dispatch','反向 · 输出梯度 dispatch'],['bwd_combine','反向 · 输入梯度 combine']])row(id,'AllToAll',name,ep,'EP',moeInstances,mb,'a2aBW',a2aFormula,'按 top-K 展开并逐 expert 发送；均衡路由下本地份额 1/EP。共享专家不参与这项 AllToAll。');
+ row('replay_a2a','AllToAll','重计算 · dispatch + combine',ep,'EP',moeInstances,2*mb*replayA2A,'a2aBW',a2aFormula,'每次完整 MoE 前向重放增加 2 次通信；部分重计算须按实际 scope 指定。');
+ const expertPerLayer=r.nMoE?r.Pexp/(ep*r.nMoE):0;
+ const nonexpert=[],expert=[];
+ for(const u of r.units){
+  const hasMoE=u.index>r.nDense&&u.index<=m.layers&&(c.unit==='layer'||u.group==='MoE');
+  const ex=hasMoE?expertPerLayer:0,n=u.pFull-ex;
+  if(n>0)nonexpert.push({name:u.label,numel:n,index:u.index});
+  if(ex>0)expert.push({name:u.label,numel:ex,index:u.index});
+ }
+ for(const [key,name,group,items]of [['fsdp','非路由参数 FSDP',c.world,nonexpert],['epfsdp','路由专家 EP-FSDP',ef,expert]]){
+  const byteItems=bytes=>items.map(x=>({name:x.name,bytes:x.numel*bytes,index:x.index}));
+  const paramFormula=key==='fsdp'?'当前计算单位的非路由参数量 × 2 bytes':'当前计算单位的全部 routed 参数量 / ep_size × 2 bytes';
+  row('fwd_ag_'+key,'AllGather','前向 · '+name,group,name,byteItems(2),mb,'agBW',paramFormula,'逻辑 N 为 gather 后完整参数；本地输入为 N/group。预取只调整时序，不增加一次 gather。');
+  row('bwd_ag_'+key,'AllGather','反向 · '+name,group,name,byteItems(2),mb,'agBW',paramFormula,'按前向后 reshard、反向重新 gather；反向参数仍为 BF16。');
+  row('replay_ag_'+key,'AllGather','重计算额外 gather · '+name,group,name,byteItems(2).filter(x=>x.index>0),mb*replayAG,'agBW',paramFormula,'每层重放默认复用反向 gather；整段重放默认再增加一轮。不计 embedding 重放。');
+  row('grad_rs_'+key,'ReduceScatter','梯度 · '+name,group,name,byteItems(c.gradBytes),q.reducePolicy==='micro'?mb:1,'rsBW',paramFormula.replace('2 bytes',`${c.gradBytes} bytes`),'逻辑 N 为完整梯度输入；输出 shard 为 N/group。跟随 reduce 精度，不跟随常驻梯度精度。');
+ }
+ const agroup=q.arGroup==='world'?c.world:q.arGroup==='ep'?ep:ef;
+ row('extra_ar','AllReduce','自定义 AllReduce（统计量等）',agroup,q.arGroup,[{name:'自定义 tensor',bytes:q.arElements*q.arBytes}],q.arCalls,'arBW','元素数 × dtype bytes','默认 0 次；FSDP 梯度已经用 ReduceScatter 计入，不再补一份全梯度 AllReduce。');
+ const sum=(list,key)=>list.reduce((n,x)=>n+x[key],0),active=rows.filter(x=>x.calls>0);
+ const networkSeconds=active.some(x=>x.time===null)?null:sum(active,'time');
+ const io=[{id:'activation_h2d',name:'激活恢复 · H2D',bytes:r.traffic.activation,bw:c.h2d,time:r.traffic.activation/(c.h2d*1e9)},
+ {id:'activation_d2h',name:'激活卸载 · D2H',bytes:r.traffic.activation,bw:c.d2h,time:r.traffic.activation/(c.d2h*1e9)},
+ {id:'optimizer_h2d',name:'优化器恢复 · H2D',bytes:r.traffic.optimizer,bw:c.h2d,time:r.traffic.optimizer/(c.h2d*1e9)},
+ {id:'optimizer_d2h',name:'优化器卸载 · D2H',bytes:r.traffic.optimizer,bw:c.d2h,time:r.traffic.optimizer/(c.d2h*1e9)}];
+ const a2a=rows.filter(x=>x.op==='AllToAll'),fsdp=rows.filter(x=>['AllGather','ReduceScatter'].includes(x.op));
+ const serial=networkSeconds===null?null:networkSeconds+r.ioTime;
+ const parallel=networkSeconds===null?null:Math.max(networkSeconds,r.activationIO)+r.optimizerIO;
+ if(!r.accumulationSteps)warnings.push('GBS 无法对应均匀的整数 micro batches；次数与流量按每 rank 等效工作量估算，不是一次真实调度。');
+ if(c.imbalance>1)warnings.push('MoE 不均衡系数用于热点 rank 的预算；不要将热点发送量直接乘 world_size 当成守恒的集群总流量。');
+ if(q.reducePolicy==='step'&&mb!==1)warnings.push('每 step 才做 ReduceScatter 需要保留未分片梯度；显存页目前仍按逐 micro batch 规约的容量模型，未补这部分驻留。');
+ if(r.recomputedAct>0&&!r.fullRecompute&&q.replayA2A==='auto')warnings.push('逐项重计算的通信取决于 checkpoint scope；自动模式不增加 AllToAll，可手动增加一轮 MoE 重放。');
+ if(r.recomputedAct>0)warnings.push('额外通信已按重放选项计量；重计算的额外算子耗时需补入计算窗口。');
+ if(networkSeconds===null)warnings.push('有活动通信的带宽未填写；总耗时暂不计算。');
+ warnings.push('所有集合通信带宽默认 100 GB/s、每调用 10 μs 仅为示例假设，需替换为对应 group、message size、dtype 的基准值。');
+ warnings.push('发送量使用均衡 AllToAll / 标准 ring 等价模型；未模拟 HCCL 拓扑、协议开销、跨 Host 路径、token 去重或路由元数据。');
+ return {errors,warnings,q,rows,io,mb,width,widthName,tokenBytes,replayA2A,replayAG,networkSeconds,sendBytes:sum(rows,'sendBytes'),a2aSendBytes:sum(a2a,'sendBytes'),fsdpSendBytes:sum(fsdp,'sendBytes'),ioSeconds:r.ioTime,activationIO:r.activationIO,optimizerIO:r.optimizerIO,serial,parallel,withComputeSerial:serial===null?null:serial+q.computeWindow,withComputeParallel:networkSeconds===null?null:Math.max(networkSeconds,r.activationIO,q.computeWindow)+r.optimizerIO,hostH2D:c.h2d*c.ranksPerHost,hostD2H:c.d2h*c.ranksPerHost};
+}
+root.CommunicationModel={defaults,factor,calculate};if(typeof module!=='undefined')module.exports=root.CommunicationModel;
+})(typeof globalThis!=='undefined'?globalThis:this);
+</script><script>'use strict';
+const M=MemoryModel,C=CommunicationModel,S=AtlasState,P=M.presets(WORKBOOK),$=s=>document.querySelector(s);
+let cfg=S.config(M.defaults(P[0]),M),settings={...C.defaults,...S.read(S.commKey,{})},memory,result;
+const esc=v=>String(v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const fmt=(n,d=2)=>n!==null&&Number.isFinite(n)?n.toLocaleString('en-US',{minimumFractionDigits:d,maximumFractionDigits:d}):'待填';
+const gi=n=>fmt(n/M.GiB),sec=n=>fmt(n,4);
+const card=(title,value,unit,note)=>`<article class="card"><div class="card-label">${title}</div><div class="card-value">${value}<small>${unit}</small></div><div class="card-note">${note}</div></article>`;
+$('#comm-preset').innerHTML=P.map(p=>`<option value="${esc(p.name)}">${esc(p.name)}</option>`).join('');
+function sync(){
+ $('#comm-preset').value=cfg.preset;
+ for(const el of document.querySelectorAll('[data-shared],[data-comm]')){const v=el.dataset.shared?cfg[el.dataset.shared]:settings[el.dataset.comm];if(el.type==='checkbox')el.checked=!!v;else el.value=v;}
+}
+function render(){
+ memory=M.calculate(cfg);result=C.calculate(cfg,memory,settings);const r=result;
+ $('#comm-errors').hidden=!r.errors.length;$('#comm-results').hidden=!!r.errors.length;
+ if(r.errors.length){$('#comm-errors').innerHTML='<strong>请先修正配置</strong><ul>'+r.errors.map(x=>`<li>${esc(x)}</li>`).join('')+'</ul>';return;}
+ const saved=S.write(S.modelKey,cfg);S.write(S.commKey,settings);
+ $('#sync-status').textContent=saved?'已保存到当前浏览器，与显存页双向同步；打开的另一个标签页也会更新。':'浏览器存储不可用；本页可计算，跨页配置同步不可用。';
+ const m=memory.m;
+ $('#model-summary').textContent=`${cfg.preset} · ${m.layers} 层 · ${memory.nMoE} 层 MoE · hidden_size ${m.h} · top-K ${m.topK} · ${cfg.moeMode==='latent'?'latent_h '+m.latent:'标准 hidden 路由'}。结构、重计算和逐项卸载沿用显存页。`;
+ $('#comm-batch').textContent=`${fmt(r.mb,3)} micro batches / rank · EP ${cfg.ep} × EP-FSDP ${cfg.world/cfg.ep}`;
+ $('#comm-cards').innerHTML=card('AllToAll 远端发送量',gi(r.a2aSendBytes),'GiB','含前向 / 反向 / 所选重放')+card('FSDP AG + RS 发送量',gi(r.fsdpSendBytes),'GiB','非路由 FSDP + 路由 EP-FSDP')+card('集合通信服务时间',sec(r.networkSeconds),'s',`${settings.basis==='logical'?'逻辑张量':'等价发送量'}带宽口径 · 不含计算交叠`)+card('H2D / D2H 服务时间',sec(r.ioSeconds),'s',cfg.ioMode==='serial'?'H2D + D2H 串行':'两方向理想重叠');
+ const n=r.tokenBytes,remote=n*(cfg.ep-1)/cfg.ep;
+ $('#moe-flow').innerHTML=`<div class="sparse-node">本 rank token → top-K 展开<small>${cfg.seq} × ${cfg.mbs} × ${m.topK} × ${r.width} × ${settings.a2aBytes} bytes${cfg.imbalance!==1?' × '+cfg.imbalance:''}<br>${gi(n)} GiB / 单次 / rank（${esc(r.widthName)}）</small></div><div class="sparse-node accent">前向 dispatch → 专家计算 → combine<small>每次远端发送 ${gi(remote)} GiB · 本地份额 1/${cfg.ep}</small></div><div class="sparse-node">反向 dispatch → 专家反传 → combine<small>每层每 micro batch 合计 4 次${r.replayA2A?'，重放另加 '+(2*r.replayA2A)+' 次':''}</small></div>`;
+ const families=['AllToAll','AllGather','ReduceScatter','AllReduce'].map(op=>{const rows=r.rows.filter(x=>x.op===op),time=rows.some(x=>x.time===null)?null:rows.reduce((n,x)=>n+x.time,0);return {name:op,time};});families.push({name:'激活 IO',time:r.activationIO},{name:'优化器 IO',time:r.optimizerIO});
+ const max=Math.max(0.001,...families.map(x=>x.time||0));
+ $('#comm-bars').innerHTML=families.map(x=>`<div class="part-row"><span>${x.name}</span><div class="part-track"><div class="part-fill" style="width:${100*(x.time||0)/max}%;background:var(--teal)"></div></div><strong>${sec(x.time)} s</strong></div>`).join('');
+ $('#comm-warnings').innerHTML=r.warnings.map(x=>`<div class="warning">${esc(x)}</div>`).join('');
+ const opened=new Set([...document.querySelectorAll('#comm-rows details[open]')].map(x=>x.id));
+ $('#comm-rows').innerHTML=r.rows.map(row=>{
+  const sum=row.instances.reduce((n,x)=>n+x.bytes,0),min=row.instances.length?Math.min(...row.instances.map(x=>x.bytes)):0,max=row.instances.length?Math.max(...row.instances.map(x=>x.bytes)):0;
+  const single=min===max?gi(min):`${gi(min)}–${gi(max)}`;
+  return `<details id="comm-row-${row.id}"${opened.has('comm-row-'+row.id)?' open':''}><summary>${row.op} · ${esc(row.name)}<span>${gi(row.sendBytes)} GiB 发送 · ${sec(row.time)} s</span></summary><div><div class="comm-metrics">${card('组大小',row.group,'ranks',esc(row.groupName))}${card('单次逻辑 N',single,'GiB',`${row.instances.length} 个计算单位 / 轮`)}${card('每 step 调用数',fmt(row.calls,3),'次',`轮数 ${fmt(row.passes,3)}；group=1 跳过`)}${card('每 step 逻辑 N 合计',gi(row.logicalBytes),'GiB','不等于网络发送量')}</div><div class="formula-strip">单次 N = ${esc(row.formula)}<br>Σ N / 轮 = ${gi(sum)} GiB；每 step 逻辑量 = Σ N × ${fmt(row.passes,3)}<br>等价发送量 = ${row.op==='AllReduce'?'2 × ':''}N × (${row.group}−1)/${row.group}；接收量单列同值，不再相加<br>服务时间 = ${settings.basis==='logical'?'逻辑量':'等价发送量'} / (${fmt(row.bw)} × 10⁹) + ${fmt(row.calls,3)} × ${settings.latencyUs} μs</div><p class="small-note">${esc(row.note)} ${row.group===1?'当前 group=1，网络字节和时间为 0。':''}</p><div class="table-wrap"><table><thead><tr><th>计算单位</th><th>单次逻辑 N / GiB</th><th>AG 输入 / RS 输出 shard · GiB</th></tr></thead><tbody>${row.instances.map(x=>`<tr><td>${esc(x.name)}</td><td>${fmt(x.bytes/M.GiB,6)}</td><td>${['AllGather','ReduceScatter'].includes(row.op)?fmt(x.bytes/row.group/M.GiB,6):'—'}</td></tr>`).join('')}</tbody></table></div></div></details>`;
+ }).join('');
+ $('#comm-io-rows').innerHTML=r.io.map(x=>`<tr><td>${x.name}</td><td>${gi(x.bytes)}</td><td>${fmt(x.bw)}</td><td>${sec(x.time)}</td></tr>`).join('');
+ $('#comm-host').textContent=`同 Host ${cfg.ranksPerHost} 个 rank 同时达到设定值，要求 H2D ${fmt(r.hostH2D)} GB/s、D2H ${fmt(r.hostD2H)} GB/s 聚合能力；未从单 rank 带宽证明 Host 可以承受。优化器 ${memory.optimizerSpec.name}，每方向 ${gi(memory.traffic.optimizer)} GiB / step；激活 offload ${gi(memory.offAct)} GiB / micro batch。`;
+ $('#comm-combined').innerHTML=card('通信 + IO 串行情形',sec(r.serial),'s','各项服务时间相加')+card('通信与激活 IO 理想重叠',sec(r.parallel),'s','max(通信, 激活 IO) + 优化器 IO')+card('加计算窗口 · 串行',sec(r.withComputeSerial),'s',`另加纯计算 ${sec(settings.computeWindow)} s`)+card('加计算窗口 · 理想重叠',sec(r.withComputeParallel),'s','max(通信, 激活 IO, 计算) + 优化器 IO');
+ $('#comm-sweep').innerHTML=[0.5,1,2].map(mult=>{const next={...settings};for(const k of ['a2aBW','agBW','rsBW','arBW'])next[k]*=mult;const net=C.calculate(cfg,memory,next).networkSeconds,io=r.ioSeconds/mult;return `<tr><td>${mult}×</td><td>${sec(net)}</td><td>${sec(io)}</td><td>${sec(net===null?null:net+io)}</td></tr>`;}).join('');
+}
+document.addEventListener('change',e=>{const el=e.target;
+ if(el.id==='comm-preset'){const p=P.find(p=>p.name===el.value);cfg={...cfg,preset:p.name,model:M.normalizedModel(p),arch:p.arch||'hybrid',moeMode:p.moeMode||'latent',actRatios:{},recomputeRatios:{}};sync();render();return;}
+ const key=el.dataset.shared||el.dataset.comm;if(!key)return;
+ const value=el.type==='checkbox'?el.checked:el.type==='number'||el.hasAttribute('data-number')?Number(el.value):el.value;
+ (el.dataset.shared?cfg:settings)[key]=value;render();
+});
+window.addEventListener('storage',e=>{if(e.key===S.modelKey){cfg=S.config(M.defaults(P[0]),M);sync();render();}else if(e.key===S.commKey){settings={...C.defaults,...S.read(S.commKey,{})};sync();render();}});
+$('#comm-export').addEventListener('click',()=>{const blob=new Blob([JSON.stringify({schemaVersion:1,config:cfg,communicationSettings:settings,result},null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='atlas-communication.json';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000);});
+window.getCommunicationSnapshot=()=>JSON.parse(JSON.stringify({config:cfg,settings,memory,result}));sync();render();
+</script></body></html>
